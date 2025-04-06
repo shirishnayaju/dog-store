@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@media (forced-colors: active) {
+  .your-class {
+    /* Add styles for high-contrast mode */
+    background-color: ButtonFace;
+    color: ButtonText;
+  }
+}
