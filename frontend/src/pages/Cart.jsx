@@ -4,14 +4,14 @@ import { useCart } from "../hooks/useCart";
 import { Button } from "../components/ui/button";
 import { Trash2, ShoppingBag, ArrowLeft, CreditCard, AlertCircle, Plus, Minus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { Toast } from "../components/ui/toast";
+import { useToast } from "../context/ToastContext"; // Updated to use ToastContext
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Cart() {
   const { items, removeFromCart, total, addToCart, subtractFromCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const { addToast } = useToast(); // Using the same toast context as VaccinationCard
   const [removeItemId, setRemoveItemId] = useState(null);
 
   useEffect(() => {
@@ -20,8 +20,13 @@ export default function Cart() {
 
   const handleProceedToCheckout = () => {
     if (!user) {
-      setShowLoginPrompt(true);
-      setTimeout(() => setShowLoginPrompt(false), 3000);
+      // Using ToastContext instead of local state for login prompt
+      addToast({
+        title: "Login Required",
+        description: "Please log in to proceed with checkout",
+        duration: 3000,
+        type: 'warning'
+      });
       return;
     }
     navigate("/checkout");
@@ -36,6 +41,14 @@ export default function Cart() {
     setTimeout(() => {
       removeFromCart(id);
       setRemoveItemId(null);
+      
+      // Add toast notification when item is removed
+      addToast({
+        title: "Item Removed",
+        description: "The item has been removed from your cart.",
+        duration: 3000,
+        type: 'info'
+      });
     }, 300);
   };
 
@@ -136,7 +149,15 @@ export default function Cart() {
                         <div className="col-span-5 md:col-span-2">
                           <div className="flex items-center justify-center bg-gray-100 rounded-lg p-1">
                             <motion.button
-                              onClick={() => subtractFromCart(item.id)}
+                              onClick={() => {
+                                subtractFromCart(item.id);
+                                addToast({
+                                  title: "Quantity Updated",
+                                  description: `${item.name} quantity decreased.`,
+                                  duration: 2000,
+                                  type: 'info'
+                                });
+                              }}
                               className="h-8 w-8 rounded-md bg-white text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center shadow-sm"
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
@@ -146,7 +167,15 @@ export default function Cart() {
                             </motion.button>
                             <span className="mx-3 font-medium text-gray-800">{item.quantity}</span>
                             <motion.button
-                              onClick={() => addToCart(item)}
+                              onClick={() => {
+                                addToCart(item);
+                                addToast({
+                                  title: "Quantity Updated",
+                                  description: `${item.name} quantity increased.`,
+                                  duration: 2000,
+                                  type: 'info'
+                                });
+                              }}
                               className="h-8 w-8 rounded-md bg-white text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center shadow-sm"
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
@@ -228,37 +257,6 @@ export default function Cart() {
         </motion.div>
       </div>
 
-      {/* Login Prompt Toast */}
-      <AnimatePresence>
-        {showLoginPrompt && (
-          <motion.div
-            className="fixed bottom-6 right-6 bg-white rounded-lg shadow-xl border-l-4 border-blue-500 p-4 w-80 z-50"
-            initial={{ opacity: 0, y: 20, x: 20 }}
-            animate={{ opacity: 1, y: 0, x: 0 }}
-            exit={{ opacity: 0, y: 20, x: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <AlertCircle className="h-5 w-5 text-blue-500" />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-gray-800">Login Required</h3>
-                <div className="mt-1">
-                  <p className="text-sm text-gray-600">
-                    Please log in to proceed with checkout
-                  </p>
-                </div>
-                <div className="mt-3">
-                  <Button onClick={goToLogin} className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm">
-                    Go to Login
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

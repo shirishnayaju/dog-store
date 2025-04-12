@@ -3,25 +3,28 @@ import { Link } from 'react-router-dom';
 import { Button } from "./ui/button";
 import { useCart } from '../hooks/useCart';
 import { FaShoppingCart, FaStar } from 'react-icons/fa';
-import { Toast } from '../components/ui/toast';
+import { useToast } from '../context/ToastContext'; // Changed to use ToastContext
 
-export default function VaccinationCard({ vaccine, categoryIcons }) {
+function VaccinationCard({ vaccine, categoryIcons }) {
   // Safety check - if vaccine is undefined, don't render the component
   if (!vaccine) {
     return null;
   }
 
   const { addToCart } = useCart();
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const { addToast } = useToast(); // Using the toast context hook
   const [quantity, setQuantity] = useState(1); // Default quantity is 1
 
   const handleAddToCart = () => {
     addToCart({ ...vaccine, quantity });
-    setShowConfirmation(true);
-    // Auto-hide confirmation after 3 seconds
-    setTimeout(() => {
-      setShowConfirmation(false);
-    }, 3000);
+    
+    // Using the toast system from context
+    addToast({
+      title: "Product Added",
+      description: `"${vaccine.name}" has been added to your cart.`,
+      duration: 3000,
+      type: 'success'
+    });
   };
 
   return (
@@ -115,15 +118,8 @@ export default function VaccinationCard({ vaccine, categoryIcons }) {
           </div>
         </div>
       </div>
-      {/* Toast Notification for Add to Cart */}
-      {showConfirmation && (
-        <Toast
-          title="Product Added"
-          description={`"${vaccine.name}" has been added to your cart.`}
-          duration={3000}
-          onClose={() => setShowConfirmation(false)}
-        />
-      )}
     </div>
   );
 }
+
+export default VaccinationCard;
