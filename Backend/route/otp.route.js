@@ -3,7 +3,7 @@ import { sendOtp, verifyOtp } from "../controller/otp.controller.js";
 
 const router = express.Router();
 
-router.post("/send-otp", sendOtp);  // Route to send OTP
-router.post("/verify-otp", verifyOtp);  // Route to verify OTP
+router.post("/send-otp", sendOtp);     // POST /api/otp/send-otp
+router.post("/verify-otp", verifyOtp); // POST /api/otp/verify-otp
 
 export default router;

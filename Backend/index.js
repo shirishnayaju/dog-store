@@ -7,7 +7,10 @@ import productRoute from "./route/product.route.js";
 import createAdminAccount from "./controller/Admin.controller.js";
 import orderRoutes from "./route/order.route.js";
 import otpRoutes from "./route/otp.route.js";
-import vaccinationRoutes from "./route/VaccinationBooking.route.js"; // Corrected path
+import vaccinationRoutes from "./route/VaccinationBooking.route.js";
+import mailRoutes from "./route/mailRoutes.js";
+import emailRoutes from "./route/email.route.js"; 
+import paymentRoutes from "./route/payments.js"; // Fixed import
 
 // Load environment variables
 dotenv.config();
@@ -44,7 +47,10 @@ app.use("/user", userRoute);
 app.use("/products", productRoute);
 app.use("/api", orderRoutes);
 app.use("/api/otp", otpRoutes);
-app.use('/api', vaccinationRoutes); // Changed to '/api' to match routes defined in VaccinationBooking.routes.js
+app.use('/api', vaccinationRoutes);
+app.use("/api", mailRoutes);
+app.use("/api", emailRoutes); // Use the imported email routes
+app.use('/payments', paymentRoutes); // Fixed route usage
 
 // Default route
 app.get("/", (req, res) => {

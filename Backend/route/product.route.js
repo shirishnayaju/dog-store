@@ -1,7 +1,10 @@
 import express from 'express';
 import {
-  getAllProducts, // Add this import
+  getAllProducts,
+  addProduct,
   getProductById,
+  updateProduct,
+  deleteProduct,
   getProductRating,
   addComment,
   getComments,
@@ -9,11 +12,12 @@ import {
 
 const router = express.Router();
 
-// Add this route to fetch all products
+// Product routes
 router.get('/', getAllProducts);
-
-// Existing product routes
+router.post('/', addProduct);
 router.get('/:id', getProductById);
+router.put('/:id', updateProduct);
+router.delete('/:id', deleteProduct);
 router.get('/:id/rating', getProductRating);
 
 // Comment routes

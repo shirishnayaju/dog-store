@@ -1,7 +1,17 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "../components/ui/button";
-import { Calendar } from 'lucide-react';
+import { 
+  Calendar, 
+  User, 
+  Phone, 
+  MapPin, 
+  MessageSquare, 
+  PawPrint, 
+  Clock, 
+  XCircle, 
+  CheckCircle
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function ProductModal({ 
@@ -11,6 +21,7 @@ export function ProductModal({
   buttonClassName 
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
   
@@ -77,6 +88,7 @@ export function ProductModal({
   // Modal close handler
   const handleModalClose = useCallback(() => {
     setIsModalOpen(false);
+    setCurrentStep(1);
   }, []);
   
   // Form submission handler
@@ -224,10 +236,64 @@ export function ProductModal({
     setDogName('');
     setDogBreed('');
     setDogBehaviour('');
+    setCurrentStep(1);
   };
   
   // Get today's date for min date attribute
   const today = new Date().toISOString().split('T')[0];
+  
+  // Next step handler
+  const handleNextStep = (e) => {
+    e.preventDefault();
+    
+    // Validate fields for current step
+    if (currentStep === 1) {
+      if (!appointmentDate || !appointmentTime) {
+        alert('Please select both date and time for your appointment.');
+        return;
+      }
+    } else if (currentStep === 2) {
+      if (!patientName || !phoneNumber || !city || !address) {
+        alert('Please fill all required owner information fields.');
+        return;
+      }
+      
+      // Validate phone number
+      const phoneRegex = /^\d{10}$/;
+      if (!phoneRegex.test(phoneNumber.replace(/\D/g, ''))) {
+        alert('Please enter a valid 10-digit phone number.');
+        return;
+      }
+    }
+    
+    setCurrentStep(currentStep + 1);
+  };
+  
+  // Previous step handler
+  const handlePrevStep = () => {
+    setCurrentStep(currentStep - 1);
+  };
+  
+  // Render step indicators
+  const renderStepIndicators = () => {
+    return (
+      <div className="flex justify-center mb-6">
+        <div className="flex items-center">
+          <div className={`flex items-center justify-center h-8 w-8 rounded-full ${currentStep >= 1 ? 'bg-purple-500 text-white' : 'bg-gray-200'}`}>
+            1
+          </div>
+          <div className={`h-1 w-8 ${currentStep >= 2 ? 'bg-purple-500' : 'bg-gray-200'}`}></div>
+          <div className={`flex items-center justify-center h-8 w-8 rounded-full ${currentStep >= 2 ? 'bg-purple-500 text-white' : 'bg-gray-200'}`}>
+            2
+          </div>
+          <div className={`h-1 w-8 ${currentStep >= 3 ? 'bg-purple-500' : 'bg-gray-200'}`}></div>
+          <div className={`flex items-center justify-center h-8 w-8 rounded-full ${currentStep >= 3 ? 'bg-purple-500 text-white' : 'bg-gray-200'}`}>
+            3
+          </div>
+        </div>
+      </div>
+    );
+  };
   
   return (
     <>
@@ -242,167 +308,289 @@ export function ProductModal({
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div 
-            className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full overflow-y-auto max-h-screen"
+            className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full overflow-y-auto max-h-screen"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">
-              Schedule {productName} Vaccination
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-purple-600">
+                {productName} Vaccination
+              </h2>
+              <button 
+                onClick={handleModalClose}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {renderStepIndicators()}
+            
+            <div className="bg-purple-50 p-4 mb-6 rounded-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-gray-700 font-medium">{vaccinationCenter}</p>
+                  {productPrice && (
+                    <p className="text-purple-600 font-bold">${productPrice.toFixed(2)}</p>
+                  )}
+                </div>
+                <PawPrint className="w-8 h-8 text-purple-500" />
+              </div>
+            </div>
             
             <form onSubmit={handleSubmit}>
-              {/* Patient Information Inputs */}
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Full Name</label>
-                <input
-                  type="text"
-                  value={patientName}
-                  onChange={(e) => setPatientName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                />
-              </div>
+              {/* Step 1: Appointment Selection */}
+              {currentStep === 1 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Select Appointment Time</h3>
+                  
+                  <div className="mb-4">
+                    <label className="flex items-center text-gray-700 mb-2">
+                      <Calendar className="w-4 h-4 mr-2 text-purple-500" />
+                      Select Date
+                    </label>
+                    <input
+                      type="date"
+                      value={appointmentDate}
+                      onChange={(e) => setAppointmentDate(e.target.value)}
+                      min={today}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none transition"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="flex items-center text-gray-700 mb-2">
+                      <Clock className="w-4 h-4 mr-2 text-purple-500" />
+                      Select Time
+                    </label>
+                    <select
+                      value={appointmentTime}
+                      onChange={(e) => setAppointmentTime(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none transition"
+                      required
+                    >
+                      <option value="">Select a time</option>
+                      <option value="09:00">9:00 AM</option>
+                      <option value="10:00">10:00 AM</option>
+                      <option value="11:00">11:00 AM</option>
+                      <option value="13:00">1:00 PM</option>
+                      <option value="14:00">2:00 PM</option>
+                      <option value="15:00">3:00 PM</option>
+                      <option value="16:00">4:00 PM</option>
+                    </select>
+                  </div>
+                  
+                  <div className="flex justify-end mt-6">
+                    <Button
+                      type="button"
+                      onClick={handleNextStep}
+                      className="bg-purple-500 hover:bg-purple-600 text-white"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
               
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  placeholder="1234567890"
-                  required
-                />
-              </div>
+              {/* Step 2: Owner Information */}
+              {currentStep === 2 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Owner Information</h3>
+                  
+                  <div className="mb-4">
+                    <label className="flex items-center text-gray-700 mb-2">
+                      <User className="w-4 h-4 mr-2 text-purple-500" />
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={patientName}
+                      onChange={(e) => setPatientName(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none transition"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="flex items-center text-gray-700 mb-2">
+                      <Phone className="w-4 h-4 mr-2 text-purple-500" />
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none transition"
+                      placeholder="1234567890"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="flex items-center text-gray-700 mb-2">
+                        <MapPin className="w-4 h-4 mr-2 text-purple-500" />
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none transition"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="flex items-center text-gray-700 mb-2">
+                        <MapPin className="w-4 h-4 mr-2 text-purple-500" />
+                        Address
+                      </label>
+                      <textarea
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none transition"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between mt-6">
+                    <Button
+                      type="button"
+                      onClick={handlePrevStep}
+                      className="bg-gray-300 hover:bg-gray-400 text-gray-800"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleNextStep}
+                      className="bg-purple-500 hover:bg-purple-600 text-white"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
               
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">City</label>
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                />
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Address</label>
-                <textarea
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                />
-              </div>
-              
-              {/* Dog Information Inputs */}
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Dog Name</label>
-                <input
-                  type="text"
-                  value={dogName}
-                  onChange={(e) => setDogName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                />
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Dog Breed</label>
-                <input
-                  type="text"
-                  value={dogBreed}
-                  onChange={(e) => setDogBreed(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                />
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Dog Behaviour</label>
-                <select
-                  value={dogBehaviour}
-                  onChange={(e) => setDogBehaviour(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                >
-                  <option value="">Select Dog Behaviour</option>
-                  <option value="Friendly">Friendly</option>
-                  <option value="Playful">Playful</option>
-                  <option value="Aggressive">Aggressive</option>
-                </select>
-              </div>
-              
-              {/* Appointment Details */}
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Select Date</label>
-                <input
-                  type="date"
-                  value={appointmentDate}
-                  onChange={(e) => setAppointmentDate(e.target.value)}
-                  min={today}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                />
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Select Time</label>
-                <select
-                  value={appointmentTime}
-                  onChange={(e) => setAppointmentTime(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                >
-                  <option value="">Select a time</option>
-                  <option value="09:00">9:00 AM</option>
-                  <option value="10:00">10:00 AM</option>
-                  <option value="11:00">11:00 AM</option>
-                  <option value="13:00">1:00 PM</option>
-                  <option value="14:00">2:00 PM</option>
-                  <option value="15:00">3:00 PM</option>
-                  <option value="16:00">4:00 PM</option>
-                </select>
-              </div>
-              
-              {/* Optional Special Instructions */}
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Special Instructions (Optional)</label>
-                <textarea
-                  value={specialInstructions}
-                  onChange={(e) => setSpecialInstructions(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded h-24"
-                  placeholder="Any special requirements or medical conditions we should be aware of"
-                />
-              </div>
-              
-              {/* Additional Booking Details */}
-              <div className="mb-4">
-                <p className="text-gray-700">Vaccination Center: {vaccinationCenter}</p>
-                {productPrice && (
-                  <p className="text-gray-700">Price: ${productPrice.toFixed(2)}</p>
-                )}
-              </div>
-              
-              {/* Form Action Buttons */}
-              <div className="flex justify-end space-x-2">
-                <Button
-                  type="button"
-                  onClick={handleModalClose}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
-                  disabled={isSubmitting || !userEmail}
-                >
-                  {isSubmitting ? 'Submitting...' : 
-                   !userEmail ? 'Valid Login Required' : 
-                   'Confirm Appointment'}
-                </Button>
-              </div>
+              {/* Step 3: Dog Information and Confirmation */}
+              {currentStep === 3 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Dog Information</h3>
+                  
+                  <div className="mb-4">
+                    <label className="flex items-center text-gray-700 mb-2">
+                      <PawPrint className="w-4 h-4 mr-2 text-purple-500" />
+                      Dog Name
+                    </label>
+                    <input
+                      type="text"
+                      value={dogName}
+                      onChange={(e) => setDogName(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none transition"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="flex items-center text-gray-700 mb-2">
+                        <PawPrint className="w-4 h-4 mr-2 text-purple-500" />
+                        Dog Breed
+                      </label>
+                      <input
+                        type="text"
+                        value={dogBreed}
+                        onChange={(e) => setDogBreed(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none transition"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="flex items-center text-gray-700 mb-2">
+                        <PawPrint className="w-4 h-4 mr-2 text-purple-500" />
+                        Dog Behaviour
+                      </label>
+                      <select
+                        value={dogBehaviour}
+                        onChange={(e) => setDogBehaviour(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none transition"
+                        required
+                      >
+                        <option value="">Select</option>
+                        <option value="Friendly">Friendly</option>
+                        <option value="Playful">Playful</option>
+                        <option value="Aggressive">Aggressive</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="flex items-center text-gray-700 mb-2">
+                      <MessageSquare className="w-4 h-4 mr-2 text-purple-500" />
+                      Special Instructions (Optional)
+                    </label>
+                    <textarea
+                      value={specialInstructions}
+                      onChange={(e) => setSpecialInstructions(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-300 focus:border-purple-500 outline-none transition h-20"
+                      placeholder="Any special requirements or medical conditions we should be aware of"
+                    />
+                  </div>
+                  
+                  <div className="bg-blue-50 p-4 rounded-lg mt-6 mb-4">
+                    <h4 className="font-medium text-blue-700 mb-2">Appointment Summary</h4>
+                    <div className="grid grid-cols-2 gap-y-2 text-sm">
+                      <div className="text-gray-600">Vaccine:</div>
+                      <div className="font-medium">{productName}</div>
+                      
+                      <div className="text-gray-600">Date:</div>
+                      <div className="font-medium">{appointmentDate}</div>
+                      
+                      <div className="text-gray-600">Time:</div>
+                      <div className="font-medium">{appointmentTime}</div>
+                      
+                      <div className="text-gray-600">Center:</div>
+                      <div className="font-medium">{vaccinationCenter}</div>
+                      
+                      {productPrice && (
+                        <>
+                          <div className="text-gray-600">Price:</div>
+                          <div className="font-medium">${productPrice.toFixed(2)}</div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between mt-6">
+                    <Button
+                      type="button"
+                      onClick={handlePrevStep}
+                      className="bg-gray-300 hover:bg-gray-400 text-gray-800"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="bg-green-500 hover:bg-green-600 text-white flex items-center"
+                      disabled={isSubmitting || !userEmail}
+                    >
+                      {isSubmitting ? (
+                        <>Submitting...</>
+                      ) : !userEmail ? (
+                        <>Valid Login Required</>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Confirm Booking
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </form>
           </div>
         </div>

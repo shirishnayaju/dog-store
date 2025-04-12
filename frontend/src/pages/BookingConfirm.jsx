@@ -42,11 +42,6 @@ const successVariants = {
   visible: { 
     scale: 1, 
     opacity: 1,
-    transition: { 
-      type: "spring",
-      stiffness: 200,
-      damping: 15
-    }
   }
 };
 
@@ -63,7 +58,7 @@ export default function BookingConfirm() {
   const vaccinationCenters = {
     "Main Center": {
       address: "Radhe Radhe, Bhaktapur",
-      coordinates: [27.7172, 85.3240], // Latitude, Longitude
+      coordinates: [27.6757748, 85.3979919], // Updated coordinates for Gharpaluwa Pets Solution
       phone: "+977-1-4123456",
       hours: "9:00 AM - 5:00 PM"
     },
@@ -260,8 +255,7 @@ export default function BookingConfirm() {
       const center = vaccinationCenters[centerName];
       
       if (center && center.coordinates) {
-        const [lat, lng] = center.coordinates;
-        const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+        const url = `https://www.google.com/maps/place/Gharpaluwa+Pets+Solution/@27.6757748,85.395417,17z/data=!3m1!4b1!4m6!3m5!1s0x39eb1b04590683f9:0xecdcd2cec3f42ee1!8m2!3d27.6757748!4d85.3979919!16s%2Fg%2F11hds3qvl8?entry=ttu&g_ep=EgoyMDI1MDQwNy4wIKXMDSoASAFQAw%3D%3D`;
         window.open(url, '_blank');
       }
     }
@@ -580,7 +574,7 @@ export default function BookingConfirm() {
       variants={itemVariants}
     >
       <div className="bg-purple-100 p-2 rounded-lg mr-3">
-        <Dog className="h-5 w-5 text-purple-600" /> {/* Assuming you import Dog icon from lucide-react */}
+        <Dog className="h-5 w-5 text-purple-600" />
       </div>
       <div>
         <p className="text-sm text-gray-500">Dog Name</p>
@@ -593,7 +587,7 @@ export default function BookingConfirm() {
       variants={itemVariants}
     >
       <div className="bg-purple-100 p-2 rounded-lg mr-3">
-        <PawPrint className="h-5 w-5 text-purple-600" /> {/* Assuming you import PawPrint icon from lucide-react */}
+        <PawPrint className="h-5 w-5 text-purple-600" />
       </div>
       <div>
         <p className="text-sm text-gray-500">Dog Breed</p>
@@ -606,7 +600,7 @@ export default function BookingConfirm() {
       variants={itemVariants}
     >
       <div className="bg-purple-100 p-2 rounded-lg mr-3">
-        <Activity className="h-5 w-5 text-purple-600" /> {/* Assuming you import Activity icon from lucide-react */}
+        <Activity className="h-5 w-5 text-purple-600" />
       </div>
       <div>
         <p className="text-sm text-gray-500">Dog Behaviour</p>
@@ -696,7 +690,9 @@ export default function BookingConfirm() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Button 
-                 onClick={() => navigate(`/MyBookings`)}
+                  onClick={() => {
+                    window.print();
+                  }}
                   className="w-full bg-yellow-500 hover:bg-yellow-600"
                 >
                   Print Confirmation

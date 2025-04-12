@@ -12,7 +12,7 @@ export const getAllProducts = async (req, res) => {
 // Add a new product
 export const addProduct = async (req, res) => {
   try {
-    const { name, category, price, description, image, ingredients, details } = req.body;
+    const { name, category, price, description, image, ingredients, recommendedFor, details } = req.body;
     
     // Create new product
     const newProduct = new Product({
@@ -22,6 +22,7 @@ export const addProduct = async (req, res) => {
       description,
       image,
       ingredients,
+      recommendedFor,
       details
     });
     
@@ -38,6 +39,54 @@ export const addProduct = async (req, res) => {
     res.status(201).json(savedProduct);
   } catch (error) {
     res.status(500).json({ message: 'Error adding product', error: error.message });
+  }
+};
+
+// Update product by ID
+export const updateProduct = async (req, res) => {
+  try {
+    const { name, category, price, description, image, ingredients, recommendedFor, details } = req.body;
+    
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        category,
+        price,
+        description,
+        image,
+        ingredients,
+        recommendedFor,
+        details
+      },
+      { new: true } // Return the updated document
+    );
+    
+    if (!updatedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating product', error: error.message });
+  }
+};
+
+// Delete product by ID
+export const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    // Also delete related ratings and comments
+    await Rating.deleteMany({ productId: req.params.id });
+    await Comment.deleteMany({ productId: req.params.id });
+    
+    res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting product', error: error.message });
   }
 };
 

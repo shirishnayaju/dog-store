@@ -56,17 +56,18 @@ export default function Signup() {
     }
   };
   
-  const handleGoogleSignup = async (googleData) => {
+  const handleGoogleSignup = async (credentialResponse) => {
     setIsSubmitting(true);
     setMessage(null);
     
     try {
-      // For Google signup
-      console.log("Processing Google signup");
+      // Decode the JWT token to get user info
+      const decoded = jwt_decode(credentialResponse.credential);
+      console.log("Processing Google signup with data:", decoded);
       
       // First check if email already exists
-      const checkResponse = await axios.post(`http://localhost:4001/user/check-email`, {
-        email: data.email
+      const checkResponse = await axios.post(`${API_URL}/user/check-email`, {
+        email: decoded.email
       });
       
       if (checkResponse.data.exists) {
@@ -74,27 +75,16 @@ export default function Signup() {
         return;
       }
       
-      if (googleData.email_verified) {
-        // If Google already verified the email, we still send to verification page
-        // but can mark as "pre-verified"
-        navigate('/verification-pending', { 
-          state: { 
-            googleData,
-            email: googleData.email,
-            method: 'google',
-            preVerified: true
-          }
-        });
-      } else {
-        // If Google email isn't pre-verified, we'll need verification
-        navigate('/verification-pending', { 
-          state: { 
-            googleData,
-            email: googleData.email,
-            method: 'google'
-          }
-        });
-      }
+      // Navigate to verification page with Google data
+      navigate('/verification-pending', { 
+        state: { 
+          googleData: decoded,
+          email: decoded.email,
+          name: decoded.name,
+          method: 'google',
+          preVerified: decoded.email_verified
+        }
+      });
     } catch (error) {
       console.error("Error during Google signup:", error);
       

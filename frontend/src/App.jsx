@@ -28,6 +28,10 @@ import BookingConfirm from "./pages/BookingConfirm";
 import MyBookings from "./pages/MyBookings";
 import ScheduleVaccination from "./pages/ScheduleVaccination";
 import SearchResults from "./pages/SearchResults";
+import Bookings from "./pages/Bookings";
+import ProductForm from './pages/ProductForm';
+import Payment from "./pages/payment";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 function App() {
   return (
@@ -41,6 +45,9 @@ function App() {
               <Route path="products" element={<AdminProducts />} />
               <Route path="orders" element={<Orders />} />
               <Route path="customers" element={<Customers />} />
+              <Route path="bookings" element={<Bookings />} />
+              <Route path="products/add" element={<ProductForm />} />
+              <Route path="products/edit/:id" element={<ProductForm />} />
             </Route>
             {/* Main routes with Header and Footer */}
             <Route path="*" element={
@@ -68,6 +75,8 @@ function App() {
                     <Route path="/BookingConfirm" element={<BookingConfirm />} />
                     <Route path="/ScheduleVaccination" element={<ScheduleVaccination />} />
                     <Route path="/search" element={<SearchResults />} />
+                    <Route path="/payment" element={<Payment />} />
+                    <Route path="/payment-success" element={<PaymentSuccess />} />
                     
                   </Routes>
                 </main>

@@ -19,15 +19,20 @@
   },
   "homepage": "https://github.com/shirishnayaju/dogstore#readme",
   "dependencies": {
+    "axios": "^1.8.4",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
+    "khalti-checkout-web": "^2.2.0",
+    "lucide-react": "^0.487.0",
     "mongoose": "^8.8.4",
+    "multer": "^1.4.5-lts.2",
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.7",
-    "otp-generator": "^4.0.1"
+    "otp-generator": "^4.0.1",
+    "path": "^0.12.7"
   }
 }
