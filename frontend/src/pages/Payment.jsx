@@ -1,6 +1,7 @@
+// src/components/Payment.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import khalti from "../Image/khalti.png";
+import khalti from "../Image/khalti.png"; // Adjust path as needed
 import KhaltiCheckout from "khalti-checkout-web";
 import axios from "axios";
 import { 
@@ -10,8 +11,7 @@ import {
   ChevronLeft, 
   ShoppingBag, 
   Truck, 
-  Clock,
-  CheckCircle
+  Clock
 } from "lucide-react";
 
 const Payment = () => {
@@ -23,24 +23,80 @@ const Payment = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Environment variables
-  const khaltiPublicKey = import.meta.env.VITE_KHALTI_PUBLIC_KEY || "test_public_key_c86fd229687147c296108dadb68858fc";
+  // Environment variables - ONLY use the public key in frontend
+  const khaltiPublicKey = import.meta.env.VITE_KHALTI_PUBLIC_KEY;
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4001";
 
   useEffect(() => {
+    // Log configuration for debugging
+    console.log("API Base URL:", apiBaseUrl);
+    console.log("Khalti Public Key exists:", !!khaltiPublicKey);
+    
+    // Validate required environment variables
+    if (!apiBaseUrl) {
+      console.error("API Base URL is missing!");
+      setError("Configuration error. Please contact support.");
+      return;
+    }
+
     if (!khaltiPublicKey) {
       console.error("Khalti public key missing!");
       setError("Online payments temporarily unavailable. Please try cash on delivery.");
     }
-  }, [khaltiPublicKey]);
+  }, [khaltiPublicKey, apiBaseUrl]);
 
   useEffect(() => {
+    // Check if we're returning from Khalti with query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const pidx = urlParams.get('pidx');
+    const txnId = urlParams.get('txnId');
+    const status = urlParams.get('status');
+    const order_id = urlParams.get('order_id');
+    
+    if (pidx && status) {
+      // Handle returning from Khalti with query parameters
+      handleKhaltiReturn({ pidx, txnId, status, order_id });
+      return;
+    }
+
+    // Regular page load handling
     if (location.state?.orderDetails) {
       handleOrderState(location.state.orderDetails);
     } else {
       fetchLatestOrder();
     }
   }, [location]);
+
+  const handleKhaltiReturn = async (params) => {
+    try {
+      setLoading(true);
+      console.log("Handling Khalti return with params:", params);
+      
+      // Send to your backend to verify with Khalti using the secret key
+      const { data } = await axios.post(`${apiBaseUrl}/payments/verify-khalti-return`, params);
+      
+      if (data?.success) {
+        navigate("/payment-success", { 
+          state: { 
+            paymentDetails: data.data,
+            orderDetails: data.orderDetails,
+            orderItems: data.orderItems || [],
+            paymentMethod: "khalti"
+          } 
+        });
+      } else {
+        setError(data?.message || "Payment verification failed");
+        fetchLatestOrder();
+      }
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || "Verification failed";
+      setError(errorMsg);
+      console.error("Return verification error:", err);
+      fetchLatestOrder();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleOrderState = (order) => {
     setOrderDetails(order);
@@ -57,7 +113,8 @@ const Payment = () => {
       const response = await axios.get(`${apiBaseUrl}/api/orders/latest`);
       handleOrderState(response.data);
     } catch (error) {
-      setError("Failed to load order details");
+      const errorMsg = error.response?.data?.message || "Failed to load order details";
+      setError(errorMsg);
       console.error("Order fetch error:", error);
     } finally {
       setLoading(false);
@@ -79,44 +136,85 @@ const Payment = () => {
   };
 
   const processKhaltiPayment = () => {
-    if (!khaltiPublicKey || !orderDetails?.total) {
-      setError("Payment configuration error");
+    if (!khaltiPublicKey) {
+      setError("Payment configuration error: Missing Khalti API key");
+      return;
+    }
+    
+    if (!orderDetails?.total) {
+      setError("Order total amount is missing");
       return;
     }
 
+    if (!orderDetails?._id) {
+      setError("Order ID is missing");
+      return;
+    }
+
+    // Calculate amount - Khalti expects amount in paisa (1 NPR = 100 paisa)
+    // Ensure a minimum of 100 paisa (1 NPR) and that it's an integer
+    const amountInPaisa = Math.max(100, Math.round((orderDetails.total || 0) * 100));
+    
+    console.log("Payment details:", {
+      orderId: orderDetails._id,
+      amount: orderDetails.total,
+      amountInPaisa: amountInPaisa
+    });
+
+    // Full domain for return URL
+    const returnUrl = `${window.location.origin}/payment?order_id=${orderDetails._id}`;
+    console.log("Return URL:", returnUrl);
+
     const config = {
-      publicKey: khaltiPublicKey,
+      publicKey: khaltiPublicKey.trim(), // Remove any accidental whitespace
       productIdentity: orderDetails._id,
       productName: "Order Payment",
       productUrl: window.location.origin,
-      amount: Math.round(orderDetails.total * 100),
+      amount: amountInPaisa,
       eventHandler: {
-        onSuccess: (payload) => verifyKhaltiPayment(payload),
-        onError: (err) => {
-          setError("Payment failed. Please try again.");
-          console.error("Khalti error:", err);
+        onSuccess: (payload) => {
+          console.log("Khalti payment success:", payload);
+          verifyKhaltiPayment(payload);
         },
-        onClose: () => console.log("Widget closed")
+        onError: (err) => {
+          console.error("Khalti payment error:", err);
+          setError("Payment failed. Please try again.");
+        },
+        onClose: () => {
+          console.log("Khalti widget closed");
+        }
       },
       paymentPreference: ["KHALTI"],
+      returnUrl: returnUrl,
     };
 
+    console.log("Khalti config:", {
+      ...config,
+      publicKey: config.publicKey ? "Present (hidden)" : "Missing"
+    });
+
     try {
-      new KhaltiCheckout(config).show();
+      const checkout = new KhaltiCheckout(config);
+      checkout.show();
     } catch (err) {
-      setError("Failed to initialize payment");
-      console.error("Khalti init error:", err);
+      console.error("Failed to initialize Khalti:", err);
+      setError("Failed to initialize payment. Please try again or choose another payment method.");
     }
   };
 
   const verifyKhaltiPayment = async (payload) => {
     try {
       setLoading(true);
+      console.log("Verifying payment with backend:", payload);
+      
+      // Send payment token to your backend for verification
       const { data } = await axios.post(`${apiBaseUrl}/payments/verify-khalti`, {
         token: payload.token,
         amount: payload.amount,
         orderId: orderDetails._id,
       });
+
+      console.log("Backend verification response:", data);
 
       if (data?.success) {
         navigate("/payment-success", { 
@@ -127,32 +225,70 @@ const Payment = () => {
             paymentMethod: "khalti"
           } 
         });
+      } else {
+        setError(data?.message || "Payment verification failed");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Verification failed");
-      console.error("Verification error:", err);
+      console.error("Backend verification error:", err);
+      setError(err.response?.data?.message || "Payment verification failed");
     } finally {
       setLoading(false);
     }
   };
 
   const handleCashOnDelivery = async () => {
+    if (!orderDetails?._id) {
+      setError("Missing order information. Please reload the page.");
+      return;
+    }
+
     try {
       setLoading(true);
-      const { data } = await axios.put(
-        `${apiBaseUrl}/api/orders/${orderDetails._id}/payment`,
-        { paymentMethod: "cod", paymentStatus: "pending" }
-      );
+      
+      // Try multiple endpoint formats if needed
+      let endpoint = `${apiBaseUrl}/api/orders/${orderDetails._id}/payment`;
+      let requestData = { paymentMethod: "cod", paymentStatus: "pending" };
+      let response;
+      
+      try {
+        // First try the /payment endpoint
+        console.log("Trying primary endpoint:", endpoint);
+        response = await axios.put(endpoint, requestData);
+      } catch (primaryErr) {
+        if (primaryErr.response?.status === 404) {
+          // If 404, try the direct order update endpoint
+          console.log("Primary endpoint not found, trying alternative...");
+          endpoint = `${apiBaseUrl}/api/orders/${orderDetails._id}`;
+          
+          response = await axios.put(endpoint, {
+            ...requestData,
+            _id: orderDetails._id
+          });
+        } else {
+          throw primaryErr;
+        }
+      }
       
       navigate("/payment-success", { 
         state: { 
-          orderDetails: data,
+          orderDetails: response.data,
           orderItems,
           paymentMethod: "cod"
         } 
       });
     } catch (err) {
-      setError("Failed to confirm COD");
+      const statusCode = err.response?.status;
+      let errorMessage;
+      
+      if (statusCode === 404) {
+        errorMessage = "Payment system unavailable. Please try again later.";
+      } else if (statusCode === 401 || statusCode === 403) {
+        errorMessage = "Authentication error. Please login again.";
+      } else {
+        errorMessage = err.response?.data?.message || "Failed to confirm Cash on Delivery";
+      }
+      
+      setError(errorMessage);
       console.error("COD error:", err);
     } finally {
       setLoading(false);
@@ -179,7 +315,7 @@ const Payment = () => {
       <div className="flex justify-center items-center min-h-screen bg-gray-50">
         <div className="text-center p-8 bg-white rounded-lg shadow-md">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-lg font-medium text-gray-700">Processing...</p>
+          <p className="mt-4 text-lg font-medium text-gray-700">Processing your payment...</p>
         </div>
       </div>
     );
@@ -241,17 +377,21 @@ const Payment = () => {
                     <div className="pt-4 border-t">
                       <h3 className="font-semibold mb-3">Items</h3>
                       <div className="space-y-3 max-h-60 overflow-y-auto">
-                        {orderItems.map((item, i) => (
-                          <div key={i} className="flex justify-between items-center text-sm pb-2">
-                            <div className="flex items-center">
-                              <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded mr-2">
-                                {item.quantity}
-                              </span>
-                              {item.name}
+                        {orderItems.length > 0 ? (
+                          orderItems.map((item, i) => (
+                            <div key={i} className="flex justify-between items-center text-sm pb-2">
+                              <div className="flex items-center">
+                                <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded mr-2">
+                                  {item.quantity}
+                                </span>
+                                {item.name}
+                              </div>
+                              <span>${item.price?.toFixed(2)}</span>
                             </div>
-                            <span>${item.price?.toFixed(2)}</span>
-                          </div>
-                        ))}
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-500">No items available</p>
+                        )}
                       </div>
                     </div>
 

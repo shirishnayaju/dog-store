@@ -16,6 +16,7 @@
     "axios": "^1.8.4",
     "express": "^4.21.2",
     "framer-motion": "^12.5.0",
+    "jwt-decode": "^4.0.0",
     "khalti-checkout-web": "^2.2.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",

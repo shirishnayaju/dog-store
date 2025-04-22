@@ -3,20 +3,27 @@ import {
   signup, 
   login, 
   forgotPassword, 
-  resetPassword,
-  findUserByEmail,
+  resetPassword, 
+  findUserByEmail, 
   getAllUsers,
-  checkEmail
+  checkEmail,
+  updateUser,
+  deleteUser
 } from "../controller/user.controller.js";
 
 const router = express.Router();
 
+// Existing routes
 router.post("/signup", signup);
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
-router.post("/find-by-email", findUserByEmail);
+router.post("/find-user", findUserByEmail);
 router.get("/users", getAllUsers);
-router.post("/check-email", checkEmail); // Ensure this line exists
+router.post("/check-email", checkEmail);
+
+// New routes for updating and deleting users
+router.put("/users/:id", updateUser);
+router.delete("/users/:id", deleteUser);
 
 export default router;

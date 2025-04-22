@@ -9,8 +9,9 @@ import orderRoutes from "./route/order.route.js";
 import otpRoutes from "./route/otp.route.js";
 import vaccinationRoutes from "./route/VaccinationBooking.route.js";
 import mailRoutes from "./route/mailRoutes.js";
-import emailRoutes from "./route/email.route.js"; 
-import paymentRoutes from "./route/payments.js"; // Fixed import
+import emailRoutes from "./route/email.route.js";
+import paymentRoutes from "./route/payments.js";
+import dashboardRoutes from "./route/dashboard.route.js"; // New import
 
 // Load environment variables
 dotenv.config();
@@ -24,6 +25,7 @@ app.use(cors());
 // Server port & MongoDB URI
 const PORT = process.env.PORT || 4001;
 const URI = process.env.MongoDBURI;
+
 
 // MongoDB Connection
 mongoose
@@ -49,8 +51,9 @@ app.use("/api", orderRoutes);
 app.use("/api/otp", otpRoutes);
 app.use('/api', vaccinationRoutes);
 app.use("/api", mailRoutes);
-app.use("/api", emailRoutes); // Use the imported email routes
-app.use('/payments', paymentRoutes); // Fixed route usage
+app.use("/api", emailRoutes);
+app.use('/payments', paymentRoutes);
+app.use('/api/dashboard', dashboardRoutes); // New route added
 
 // Default route
 app.get("/", (req, res) => {

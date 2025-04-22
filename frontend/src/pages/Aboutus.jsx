@@ -38,7 +38,6 @@ function Aboutus() {
   return (
 
     <div className="max-w-full mx-auto px-4 py-12 bg-gray-50">
-        <h1 className="text-3xl font-bold text-center my-8">About Us</h1>
       {/* Hero Section */}
       <motion.div 
         initial="hidden"
@@ -86,7 +85,6 @@ function Aboutus() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
-        variants={fadeIn}
         className="max-w-4xl mx-auto text-center mb-16"
       >
         <p className="text-xl text-gray-700 leading-relaxed">

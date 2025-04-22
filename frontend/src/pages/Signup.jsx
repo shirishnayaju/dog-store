@@ -98,15 +98,19 @@ export default function Signup() {
   };
   
   return (
-    <div className="max-w-md mx-auto mt-8 p-6 border rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-4 text-center">Sign Up</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <Label htmlFor="name">Name</Label>
+    <div className="max-w-md mx-auto mt-12 p-8 border rounded-xl shadow-lg bg-white">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
+        <p className="text-gray-600 mt-2">Join us today and start your journey</p>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="name" className="text-gray-700 font-medium">Full Name</Label>
           <Input 
             type="text"
             id="name"
-            placeholder="Enter your name"
+            placeholder="Enter your full name"
             {...register("name", {
               required: "Name is required",
               minLength: {
@@ -114,16 +118,17 @@ export default function Signup() {
                 message: "Name must be at least 2 characters"
               }
             })}
-            className={errors.name ? "border-red-500" : ""}
+            className={`h-11 px-4 ${errors.name ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
           />
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
+          {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
         </div>
-        <div>
-          <Label htmlFor="email">Email</Label>
+
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
           <Input 
             type="email"
             id="email"
-            placeholder="Enter your email"
+            placeholder="you@example.com"
             {...register("email", {
               required: "Email is required",
               pattern: {
@@ -131,16 +136,20 @@ export default function Signup() {
                 message: "Invalid email address"
               }
             })}
-            className={errors.email ? "border-red-500" : ""}
+            className={`h-11 px-4 ${errors.email ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
           />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+          {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
         </div>
-        <div>
-          <Label htmlFor="password">Password</Label>
+
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
+            <span className="text-xs text-gray-500">Minimum 6 characters</span>
+          </div>
           <Input 
             type="password"
             id="password"
-            placeholder="Create a password"
+            placeholder="••••••••"
             {...register("password", {
               required: "Password is required",
               minLength: {
@@ -148,24 +157,24 @@ export default function Signup() {
                 message: "Password must be at least 6 characters"
               }
             })}
-            className={errors.password ? "border-red-500" : ""}
+            className={`h-11 px-4 ${errors.password ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
           />
-          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+          {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
         </div>
         
         {message && (
           <div
-            className={`p-3 rounded ${
-              message.includes("✅") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+            className={`p-4 rounded-lg ${
+              message.includes("✅") ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"
             }`}
           >
-            <p className="text-sm">{message}</p>
+            <p className="text-sm font-medium">{message}</p>
           </div>
         )}
         
         <Button 
           type="submit" 
-          className="w-full"
+          className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
@@ -174,7 +183,7 @@ export default function Signup() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
               </svg>
-              Processing...
+              Creating Account...
             </span>
           ) : (
             "Sign Up"
@@ -182,27 +191,27 @@ export default function Signup() {
         </Button>
       </form>
       
-      <div className="mt-4 flex items-center">
-        <div className="flex-grow border-t border-gray-300"></div>
-        <span className="px-3 text-gray-500 text-sm">OR</span>
-        <div className="flex-grow border-t border-gray-300"></div>
+      <div className="mt-6 flex items-center">
+        <div className="flex-grow border-t border-gray-200"></div>
+        <span className="px-4 text-gray-500 text-sm font-medium">OR CONTINUE WITH</span>
+        <div className="flex-grow border-t border-gray-200"></div>
       </div>
       
-      <div className="mt-4">
+      <div className="mt-6">
         <GoogleLogin
           onSuccess={handleGoogleSignup}
           onError={() => setMessage("❌ Google sign-in was unsuccessful. Please try again later.")}
           useOneTap
-          className="w-full mt-4 flex items-center justify-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+          className="w-full flex items-center justify-center"
           disabled={isSubmitting}
         />
       </div>
       
-      <div className="border-t mt-6 pt-4 text-center">
-        <p className="text-gray-600 text-sm">
-          Already have an account? {" "}
-          <Link to="/login" className="text-blue-600 font-medium hover:underline">
-            Login
+      <div className="mt-8 pt-4 text-center">
+        <p className="text-gray-600">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-600 font-semibold hover:underline">
+            Log in
           </Link>
         </p>
       </div>

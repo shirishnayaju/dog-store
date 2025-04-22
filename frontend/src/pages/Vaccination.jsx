@@ -159,7 +159,7 @@ export default function Vaccination() {
               <div className="flex flex-wrap gap-4 mt-8">
                 <Button 
                   onClick={() => setShowVaccinationGivers(!showVaccinationGivers)}
-                  className="px-6 py-3 rounded-full flex items-center gap-2 bg-white text-emerald-700 hover:bg-emerald-200 transition-all shadow-md"
+                  className="px-6 py-3 rounded-full flex items-center gap-2 bg-emerald-800 text-emerald-700 hover:bg-emerald-400 transition-all shadow-md"
                 >
                   <User className="w-5 h-5" />
                   <span>{showVaccinationGivers ? 'Hide Vaccination Giver Info' : 'Show Vaccination Giver Info'}</span>
@@ -258,15 +258,15 @@ export default function Vaccination() {
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="flex justify-between items-center bg-indigo-50 px-6 py-4 border-b border-indigo-100">
-                <h2 className="text-2xl font-semibold text-indigo-700 flex items-center">
+              <div className="flex justify-between items-center bg-blue-600 px-6 py-4 border-b border-indigo-100">
+                <h2 className="text-2xl font-semibold text-white flex items-center">
                   <Info className="mr-2 w-6 h-6" />
                   Essential Vaccination Information
                 </h2>
                 <Button 
                   variant="ghost" 
                   onClick={() => setShowInfoSection(false)}
-                  className="text-gray-500 hover:text-gray-700 rounded-full w-20 h-10 p-0 flex items-center justify-center"
+                  className=" hover:text-blue-600 hover:bg-white rounded-full w-20 h-10 p-0 flex items-center justify-center"
                 >
                   Hide
                 </Button>

@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import React, { useState } from 'react'; 
+import { useForm } from 'react-hook-form'; 
+import { Link, useNavigate } from 'react-router-dom'; 
+import { Button } from "../components/ui/button"; 
+import { Input } from "../components/ui/input"; 
+import { Label } from "../components/ui/label"; 
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const { login } = useAuth();
   const [loginError, setLoginError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   
   // Handle form submission
   const onSubmit = async (data) => {
+    setIsSubmitting(true);
+    setLoginError(null);
+    
     try {
       console.log('Attempting login...');
       const userData = await login(data.email, data.password);
@@ -35,18 +39,22 @@ export default function Login() {
       } else {
         setLoginError("Login failed. Please check your credentials and try again.");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
   return (
-    <div className="max-w-md mx-auto mt-8">
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
+    <div className="max-w-md mx-auto mt-8 p-6 border rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-4 text-center">Login to Gharpaluwa</h1>
+      
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <Label htmlFor="email">Email</Label>
-          <Input
+          <Input 
             type="email"
             id="email"
+            placeholder="Enter your email"
             {...register("email", {
               required: "Email is required",
               pattern: {
@@ -54,14 +62,22 @@ export default function Login() {
                 message: "Invalid email address"
               }
             })}
+            className={errors.email ? "border-red-500" : ""}
           />
           {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
         </div>
+        
         <div>
-          <Label htmlFor="password">Password</Label>
-          <Input
+          <div className="flex justify-between items-center">
+            <Label htmlFor="password">Password</Label>
+            <Link to="/forgotpassword" className="text-blue-600 text-xs hover:underline">
+              Forgot Password?
+            </Link>
+          </div>
+          <Input 
             type="password"
             id="password"
+            placeholder="Enter your password"
             {...register("password", {
               required: "Password is required",
               minLength: {
@@ -69,20 +85,37 @@ export default function Login() {
                 message: "Password must be at least 6 characters"
               }
             })}
+            className={errors.password ? "border-red-500" : ""}
           />
           {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
         </div>
+        
         {loginError && (
-          <div className="text-red-500 text-sm mt-1">
-            {loginError}
-            <div className="text-right">
-              <Link to="/Forgotpassword" className="text-red-500 hover:underline">Forgot Password?</Link>
-            </div>
+          <div className="p-3 rounded bg-red-100 text-red-700">
+            <p className="text-sm">{loginError}</p>
           </div>
         )}
-        <Button type="submit" className="w-full">Login</Button>
+        
+        <Button 
+          type="submit" 
+          className="w-full"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center justify-center">
+              <svg className="w-5 h-5 mr-2 animate-spin" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              Logging in...
+            </span>
+          ) : (
+            "Login"
+          )}
+        </Button>
       </form>
-      <div className="border-t p-4 text-center">
+      
+      <div className="border-t mt-6 pt-4 text-center">
         <p className="text-gray-600 text-sm">
           New to Gharpaluwa?{" "}
           <Link to="/signup" className="text-blue-600 font-medium hover:underline">

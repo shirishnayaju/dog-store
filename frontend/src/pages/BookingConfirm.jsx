@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Check, Clock, User, Phone, Navigation, Info } from 'lucide-react';
+import { Calendar, MapPin, Check, Clock, User, Phone, Navigation, Info, Dog, PawPrint, Activity, Share2, Download, Home, ArrowRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import {  Dog, PawPrint, Activity } from 'lucide-react';
-import { motion } from 'framer-motion'; // Import Framer Motion
+import { motion } from 'framer-motion';
 
 // Fix for Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -23,7 +22,7 @@ const containerVariants = {
     transition: { 
       duration: 0.5,
       when: "beforeChildren",
-      staggerChildren: 0.2
+      staggerChildren: 0.15
     }
   }
 };
@@ -33,7 +32,7 @@ const itemVariants = {
   visible: { 
     y: 0, 
     opacity: 1,
-    transition: { duration: 0.5 }
+    transition: { duration: 0.4 }
   }
 };
 
@@ -42,6 +41,11 @@ const successVariants = {
   visible: { 
     scale: 1, 
     opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 15
+    }
   }
 };
 
@@ -58,21 +62,9 @@ export default function BookingConfirm() {
   const vaccinationCenters = {
     "Main Center": {
       address: "Radhe Radhe, Bhaktapur",
-      coordinates: [27.6757748, 85.3979919], // Updated coordinates for Gharpaluwa Pets Solution
+      coordinates: [27.6757748, 85.3979919],
       phone: "+977-1-4123456",
       hours: "9:00 AM - 5:00 PM"
-    },
-    "Downtown Clinic": {
-      address: "45 Health Street, Lalitpur",
-      coordinates: [27.6588, 85.3247],
-      phone: "+977-1-5987654",
-      hours: "8:00 AM - 4:00 PM"
-    },
-    "East Wing Hospital": {
-      address: "78 Care Road, Bhaktapur",
-      coordinates: [27.6710, 85.4298],
-      phone: "+977-1-6678901",
-      hours: "8:30 AM - 4:30 PM"
     }
   };
 
@@ -182,7 +174,7 @@ export default function BookingConfirm() {
         [userLocation.lat, userLocation.lng],
         center.coordinates
       ];
-      L.polyline(latlngs, { color: 'blue', dashArray: '5, 10' }).addTo(mapRef.current);
+      L.polyline(latlngs, { color: '#4F46E5', weight: 3, dashArray: '5, 8' }).addTo(mapRef.current);
 
       // Fit both markers in view
       const bounds = L.latLngBounds([
@@ -288,9 +280,24 @@ export default function BookingConfirm() {
 
   const distanceInfo = getDistanceToCenter();
 
+  // Share appointment details
+  const shareAppointment = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Vaccination Appointment',
+        text: `My vaccination appointment at ${bookingDetails.vaccinationCenter} on ${formatDate(bookingDetails.appointmentDate)} at ${formatTime(bookingDetails.appointmentTime)}.`,
+        url: window.location.href,
+      })
+      .catch((error) => console.log('Error sharing', error));
+    } else {
+      // Fallback
+      alert("Sharing is not supported in your browser. You can copy the URL instead.");
+    }
+  };
+
   if (!bookingDetails) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen bg-gray-50">
         <motion.div 
           className="text-center"
           initial={{ opacity: 0 }}
@@ -298,23 +305,25 @@ export default function BookingConfirm() {
           transition={{ duration: 0.5 }}
         >
           <motion.div 
-            className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500 mx-auto"
+            className="flex justify-center items-center h-16 w-16 mx-auto"
             animate={{ 
               rotate: 360 
             }}
             transition={{
-              duration: 1,
+              duration: 1.2,
               repeat: Infinity,
               ease: "linear"
             }}
-          ></motion.div>
+          >
+            <div className="h-16 w-16 rounded-full border-t-4 border-b-4 border-indigo-600"></div>
+          </motion.div>
           <motion.p 
-            className="mt-4 text-gray-600"
+            className="mt-6 text-gray-600 font-medium"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Loading confirmation details...
+            Loading your confirmation details...
           </motion.p>
         </motion.div>
       </div>
@@ -326,19 +335,19 @@ export default function BookingConfirm() {
 
   return (
     <motion.div 
-      className="max-w-4xl mx-auto  mb-4 p-6"
+      className="max-w-5xl mx-auto mb-12 p-4 sm:p-6 bg-gray-50"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {/* Success Header */}
+      {/* Success Header - Modern design with gradient */}
       <motion.div 
-        className="bg-blue-500 border-8 border-blue-700 p-4 rounded-lg mb-4"
+        className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl mb-8 shadow-lg overflow-hidden"
         variants={successVariants}
       >
-        <div className="flex items-center">
+        <div className="flex items-center p-6">
           <motion.div 
-            className="flex-shrink-0"
+            className="flex-shrink-0 bg-white/20 p-3 rounded-full"
             initial={{ scale: 0 }}
             animate={{ 
               scale: 1,
@@ -352,9 +361,9 @@ export default function BookingConfirm() {
           >
             <Check className="h-8 w-8 text-white" />
           </motion.div>
-          <div className="ml-3">
+          <div className="ml-4">
             <motion.h1 
-              className="text-2xl font-bold text-white"
+              className="text-2xl md:text-3xl font-bold text-white"
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -362,358 +371,525 @@ export default function BookingConfirm() {
               Vaccination Booking Confirmed!
             </motion.h1>
             <motion.p 
-              className="text-white"
+              className="text-white/90"
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              Your appointment has been successfully scheduled.
+              Your appointment has been successfully scheduled for your pet.
             </motion.p>
           </div>
         </div>
+        
+        {/* Appointment summary bar */}
+        <motion.div 
+          className="bg-indigo-700/40 backdrop-blur-sm p-4 grid grid-cols-1 md:grid-cols-3 gap-4"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.7 }}
+        >
+          <div className="flex items-center">
+            <Calendar className="h-5 w-5 text-indigo-200 mr-2" />
+            <div>
+              <p className="text-xs text-indigo-200">Date</p>
+              <p className="text-sm font-medium text-white">{formatDate(bookingDetails.appointmentDate)}</p>
+            </div>
+          </div>
+          <div className="flex items-center">
+            <Clock className="h-5 w-5 text-indigo-200 mr-2" />
+            <div>
+              <p className="text-xs text-indigo-200">Time</p>
+              <p className="text-sm font-medium text-white">{formatTime(bookingDetails.appointmentTime)}</p>
+            </div>
+          </div>
+          <div className="flex items-center">
+            <Dog className="h-5 w-5 text-indigo-200 mr-2" />
+            <div>
+              <p className="text-xs text-indigo-200">Pet</p>
+              <p className="text-sm font-medium text-white">{bookingDetails.dog?.name || "Not specified"}</p>
+            </div>
+          </div>
+        </motion.div>
       </motion.div>
 
-      {/* Location Status - WITHOUT ANY ANIMATIONS as requested */}
+      {/* Location Status - Improved UI */}
       {userLocation ? (
-        <div className="bg-blue-600 border border-green-200 rounded-md p-4 mb-6 mt-4 relative z-10">
-          <div className="text-sm text-white flex items-center mb-4">
-            <span className="bg-black p-1 rounded-full mr-2">
+        <motion.div 
+          className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-5 mb-8 shadow-md relative z-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+        >
+          <div className="text-sm text-white flex items-center mb-3">
+            <span className="bg-emerald-600/40 p-2 rounded-full mr-3">
               <Navigation className="h-4 w-4" />
             </span>
-            <span>
-              Location access granted. The distance to the vaccination center is
+            <span className="font-medium">
+              Location access granted
               {distanceInfo && (
-                <span className="ml-2 font-semibold">
-                  ({distanceInfo.distance} km, approx. {distanceInfo.travelTime} walking)
+                <span className="ml-1">
+                  — Distance: <span className="font-bold">{distanceInfo.distance} km</span> 
+                  <span className="mx-1">•</span> 
+                  Est. walking time: <span className="font-bold">{distanceInfo.travelTime}</span>
                 </span>
               )}
             </span>
           </div>
           
-          {/* Map Component - Now below the status text */}
-          <div className="bg-blue-500 shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Location</h2>
-            {/* Leaflet Map Container with fixed height */}
+          {/* Interactive Map */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 shadow-inner">
             <div 
               ref={mapContainerRef} 
-              className="w-full h-64 rounded-lg border border-gray-300 bg-gray-100 overflow-hidden"
+              className="w-full h-64 rounded-lg border border-teal-400/30 overflow-hidden shadow-sm"
             ></div>
-            <div className="mt-4">
-              <div className="text-white text-sm">Interactive map showing the vaccination center location.</div>
-              <div className="text-white text-sm mt-2">
-                Your location is shown on the map with directions to the center.
-              </div>
+            <div className="mt-3 text-white/80 text-sm flex items-center">
+              <Info className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span>Interactive map showing directions from your location to the vaccination center</span>
             </div>
           </div>
-        </div>
+        </motion.div>
       ) : (
-        <div className="bg-yellow-50 border border-yellow-100 rounded-md p-4 mb-6">
-          <div className="text-sm text-yellow-700 flex items-center">
-            <Info className="h-4 w-4 mr-2" />
-            <span>User location not available. Allow location access to see distance to center.</span>
+        <motion.div 
+          className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8 shadow-sm"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+        >
+          <div className="text-sm text-amber-800 flex items-center">
+            <span className="bg-amber-200 p-2 rounded-full mr-3">
+              <Info className="h-4 w-4 text-amber-700" />
+            </span>
+            <span className="font-medium">User location not available. Allow location access to see distance to center.</span>
           </div>
           {locationError && (
-            <div className="text-sm text-red-500 mt-2 ml-6">{locationError}</div>
+            <div className="text-sm text-red-600 mt-2 ml-12">{locationError}</div>
           )}
           <Button
             onClick={requestUserLocation}
             variant="outline"
-            className="mt-3 ml-6 text-yellow-700 border-yellow-200 hover:bg-yellow-50"
+            className="mt-3 ml-12 bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200"
           >
+            <Navigation className="h-4 w-4 mr-2" />
             Try Getting Location Again
           </Button>
-        </div>
+        </motion.div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Booking Details */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Booking Details Card */}
         <motion.div 
-          className="md:col-span-2 space-y-6"
+          className="lg:col-span-2 space-y-6"
           variants={itemVariants}
         >
           <motion.div 
-            className="bg-white shadow-md rounded-lg p-6"
-            initial={{ y: 50, opacity: 0 }}
+            className="bg-white rounded-xl shadow-md overflow-hidden"
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.8 }}
           >
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Booking Details</h2>
+            {/* Card Header */}
+            <div className="border-b border-gray-100 bg-gray-50 px-6 py-4">
+              <h2 className="text-xl font-semibold text-gray-800">Appointment Details</h2>
+            </div>
             
-            {/* Patient Information */}
-            <motion.div 
-              className="mb-6 pb-6 border-b border-gray-200"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              transition={{ delayChildren: 0.9, staggerChildren: 0.2 }}
-            >
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Owner Information</h3>
-              <div className="space-y-4">
-                <motion.div 
-                  className="flex items-start"
-                  variants={itemVariants}
-                >
-                  <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                    <User className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Owner Name</p>
-                    <p className="font-medium text-gray-800">{patientDetails.name || "Not specified"}</p>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  className="flex items-start"
-                  variants={itemVariants}
-                >
-                  <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                    <Phone className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Phone Number</p>
-                    <p className="font-medium text-gray-800">{patientDetails.phoneNumber || "Not specified"}</p>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  className="flex items-start"
-                  variants={itemVariants}
-                >
-                  <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                    <MapPin className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">City</p>
-                    <p className="font-medium text-gray-800">{patientDetails.city || "Not specified"}</p>
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
-            
-            <motion.div 
-              className="space-y-4"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              transition={{ delayChildren: 1.2, staggerChildren: 0.2 }}
-            >
+            <div className="p-6">
+              {/* Owner Information */}
               <motion.div 
-                className="flex items-start"
-                variants={itemVariants}
-              >
-                <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                  <Calendar className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Appointment Date & Time</p>
-                  <p className="font-medium text-gray-800">
-                    {formatDate(bookingDetails.appointmentDate)}, {formatTime(bookingDetails.appointmentTime)}
-                  </p>
-                </div>
-              </motion.div>
-              
-              <motion.div 
-                className="flex items-start"
-                variants={itemVariants}
-              >
-                <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                  <MapPin className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Vaccination Center</p>
-                  <p className="font-medium text-gray-800">{bookingDetails.vaccinationCenter}</p>
-                  <p className="text-gray-600">{centerDetails?.address}</p>
-                </div>
-              </motion.div>
-              
-              <motion.div 
-                className="flex items-start"
-                variants={itemVariants}
-              >
-                <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                  <Clock className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Center Hours</p>
-                  <p className="font-medium text-gray-800">{centerDetails?.hours}</p>
-                  <p className="text-gray-600">Phone: {centerDetails?.phone}</p>
-                </div>
-              </motion.div>
-            </motion.div>
-
-            <motion.div 
-              className="mt-6 pt-6 border-t border-gray-200"
-              variants={itemVariants}
-              initial="hidden"
-              animate="visible"
-              transition={{ delay: 1.5 }}
-            >
-  <h3 className="text-lg font-semibold text-gray-800 mb-3">Vaccination Information</h3>
-  <motion.div 
-    className="space-y-4"
-    variants={containerVariants}
-    initial="hidden"
-    animate="visible"
-    transition={{ delayChildren: 1.6, staggerChildren: 0.2 }}
-  >
-    <motion.div 
-      className="flex items-start"
-      variants={itemVariants}
-    >
-      <div className="bg-purple-100 p-2 rounded-lg mr-3">
-        <Navigation className="h-5 w-5 text-purple-600" />
-      </div>
-      <div>
-        <p className="text-sm text-gray-500">Vaccine Name</p>
-        <p className="font-medium text-gray-800">{bookingDetails.vaccines?.[0]?.name || "Not specified"}</p>
-      </div>
-    </motion.div>
-
-    <motion.div 
-      className="flex items-start"
-      variants={itemVariants}
-    >
-      <div className="bg-purple-100 p-2 rounded-lg mr-3">
-        <Dog className="h-5 w-5 text-purple-600" />
-      </div>
-      <div>
-        <p className="text-sm text-gray-500">Dog Name</p>
-        <p className="font-medium text-gray-800">{bookingDetails.dog?.name || "Not specified"}</p>
-      </div>
-    </motion.div>
-
-    <motion.div 
-      className="flex items-start"
-      variants={itemVariants}
-    >
-      <div className="bg-purple-100 p-2 rounded-lg mr-3">
-        <PawPrint className="h-5 w-5 text-purple-600" />
-      </div>
-      <div>
-        <p className="text-sm text-gray-500">Dog Breed</p>
-        <p className="font-medium text-gray-800">{bookingDetails.dog?.breed || "Not specified"}</p>
-      </div>
-    </motion.div>
-
-    <motion.div 
-      className="flex items-start"
-      variants={itemVariants}
-    >
-      <div className="bg-purple-100 p-2 rounded-lg mr-3">
-        <Activity className="h-5 w-5 text-purple-600" />
-      </div>
-      <div>
-        <p className="text-sm text-gray-500">Dog Behaviour</p>
-        <p className="font-medium text-gray-800">{bookingDetails.dog?.behaviour || "Not specified"}</p>
-      </div>
-    </motion.div>
-  </motion.div>
-
-              <h3 className="text-lg mt-6 pt-6 font-semibold text-gray-800 mb-3 border-t border-gray-200">Important Instructions</h3>
-              <motion.ul 
-                className="list-disc pl-5 space-y-2 text-gray-700"
+                className="mb-8 pb-6 border-b border-gray-100"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                transition={{ delayChildren: 1.8, staggerChildren: 0.1 }}
+                transition={{ delayChildren: 0.9, staggerChildren: 0.15 }}
               >
-                <motion.li variants={itemVariants}>Please arrive 15 minutes before your scheduled appointment time.</motion.li>
-                <motion.li variants={itemVariants}>Bring a valid mail having your booking confirmation.</motion.li>
-                <motion.li variants={itemVariants}>Wear a mask and follow social distancing guidelines at the center.</motion.li>
-                <motion.li variants={itemVariants}>If you're feeling unwell on the day of your appointment, please cancel appointment.</motion.li>
-                <motion.li variants={itemVariants}>After vaccination, Dog will be monitored for 15-30 minutes at the center.</motion.li>
-              </motion.ul>
-            </motion.div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <User className="h-5 w-5 text-indigo-500 mr-2" />
+                  Owner Information
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">Owner Name</p>
+                    <p className="font-medium text-gray-800 mt-1">{patientDetails.name || "Not specified"}</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">Phone Number</p>
+                    <p className="font-medium text-gray-800 mt-1">{patientDetails.phoneNumber || "Not specified"}</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4 md:col-span-2"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">City</p>
+                    <p className="font-medium text-gray-800 mt-1">{patientDetails.city || "Not specified"}</p>
+                  </motion.div>
+                </div>
+              </motion.div>
+              
+              {/* Pet Information */}
+              <motion.div 
+                className="mb-8 pb-6 border-b border-gray-100"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delayChildren: 1.0, staggerChildren: 0.15 }}
+              >
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <Dog className="h-5 w-5 text-indigo-500 mr-2" />
+                  Pet Information
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">Dog Name</p>
+                    <p className="font-medium text-gray-800 mt-1">{bookingDetails.dog?.name || "Not specified"}</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">Dog Breed</p>
+                    <p className="font-medium text-gray-800 mt-1">{bookingDetails.dog?.breed || "Not specified"}</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4 md:col-span-2"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">Dog Behaviour</p>
+                    <p className="font-medium text-gray-800 mt-1">{bookingDetails.dog?.behaviour || "Not specified"}</p>
+                  </motion.div>
+                </div>
+              </motion.div>
+              
+              {/* Appointment Details */}
+              <motion.div 
+                className="mb-8 pb-6 border-b border-gray-100"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delayChildren: 1.1, staggerChildren: 0.15 }}
+              >
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <Calendar className="h-5 w-5 text-indigo-500 mr-2" />
+                  Appointment Details
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">Date</p>
+                    <p className="font-medium text-gray-800 mt-1">{formatDate(bookingDetails.appointmentDate)}</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">Time</p>
+                    <p className="font-medium text-gray-800 mt-1">{formatTime(bookingDetails.appointmentTime)}</p>
+                  </motion.div>
+                </div>
+              </motion.div>
+              
+              {/* Center & Vaccine Details */}
+              <motion.div 
+                className="mb-8 pb-6 border-b border-gray-100"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delayChildren: 1.2, staggerChildren: 0.15 }}
+              >
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <MapPin className="h-5 w-5 text-indigo-500 mr-2" />
+                  Center & Vaccine Information
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">Vaccination Center</p>
+                    <p className="font-medium text-gray-800 mt-1">{bookingDetails.vaccinationCenter}</p>
+                    <p className="text-sm text-gray-600 mt-1">{centerDetails?.address}</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">Center Hours</p>
+                    <p className="font-medium text-gray-800 mt-1">{centerDetails?.hours}</p>
+                    <p className="text-sm text-gray-600 mt-1">Phone: {centerDetails?.phone}</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="bg-gray-50 rounded-lg p-4 md:col-span-2"
+                    variants={itemVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  >
+                    <p className="text-sm text-gray-500">Vaccine Name</p>
+                    <p className="font-medium text-gray-800 mt-1">{bookingDetails.vaccines?.[0]?.name || "Not specified"}</p>
+                  </motion.div>
+                </div>
+              </motion.div>
+              
+              {/* Important Instructions */}
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delayChildren: 1.3, staggerChildren: 0.1 }}
+              >
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <Info className="h-5 w-5 text-indigo-500 mr-2" />
+                  Important Instructions
+                </h3>
+                
+                <motion.div 
+                  className="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg"
+                  variants={itemVariants}
+                >
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>Please arrive 15 minutes before your scheduled appointment time.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>Bring a valid mail having your booking confirmation.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>Wear a mask and follow social distancing guidelines at the center.</span>
+                      </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>If you're feeling unwell on the day of your appointment, please cancel appointment.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>After vaccination, your dog will be monitored for 15-30 minutes at the center.</span>
+                    </li>
+                  </ul>
+                </motion.div>
+              </motion.div>
+            </div>
           </motion.div>
         </motion.div>
 
-        {/* Map and Actions */}
+        {/* Sidebar with Map and Actions */}
         <motion.div 
-          className="space-y-8"
+          className="space-y-6"
           variants={itemVariants}
         >
+          {/* Center Location Card */}
           <motion.div 
-            className="bg-blue-600 shadow-md w-80 rounded-lg p-6"
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
+            className="bg-white rounded-xl shadow-md overflow-hidden"
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 1.0 }}
           >
-            <h2 className="text-xl font-semibold text-white mb-4">Location</h2>
-            {/* Made the image container larger and ensured full fit */}
+            <div className="bg-indigo-500 px-6 py-4">
+              <h2 className="text-xl font-semibold text-white flex items-center">
+                <MapPin className="h-5 w-5 mr-2" />
+                Center Location
+              </h2>
+            </div>
+            
+            {/* Image Container */}
             <motion.div 
-              className="h-80 w-80 rounded-lg border border-gray-300 bg-gray-100 overflow-hidden"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              className="p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 1.1 }}
-              whileHover={{ scale: 1.03 }}
             >
-              <img 
-                src="/src/Image/image.png" 
-                alt="Vaccination center location" 
-                className="w-full h-full object-cover object-center"
-              />
-            </motion.div>
-            <div className="mt-4">
-              <motion.p 
-                className="text-white text-sm"
+              <motion.div 
+                className="rounded-lg overflow-hidden shadow-sm"
+                whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+              >
+                <img 
+                  src="/src/Image/image.png" 
+                  alt="Vaccination center location" 
+                  className="w-full h-48 object-cover object-center"
+                />
+              </motion.div>
+              
+              <motion.div 
+                className="mt-4 text-gray-600 text-sm"
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 1.2 }}
               >
-                Click the button below to see the exact location on Google Maps.
-              </motion.p>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            className="bg-white shadow-md rounded-lg p-6"
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 1.3 }}
-          >
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Options</h2>
-            <div className="space-y-3">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button 
-                  onClick={openGoogleMaps}
-                  className="w-full bg-purple-500 hover:bg-purple-600"
-                >
-                  Location on Google Map
-                </Button>
+                <p>
+                  {centerDetails?.address || "Radhe Radhe, Bhaktapur"}
+                </p>
+                <p className="mt-1">
+                  Operating hours: {centerDetails?.hours || "9:00 AM - 5:00 PM"}
+                </p>
               </motion.div>
               
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="mt-4"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 <Button 
-                  onClick={() => {
-                    window.print();
-                  }}
-                  className="w-full bg-yellow-500 hover:bg-yellow-600"
+                  onClick={openGoogleMaps}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center"
                 >
+                  <Navigation className="h-4 w-4 mr-2" />
+                  Open in Google Maps
+                </Button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+
+          {/* Actions Card */}
+          <motion.div 
+            className="bg-white rounded-xl shadow-md overflow-hidden"
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 1.2 }}
+          >
+            <div className="bg-indigo-500 px-6 py-4">
+              <h2 className="text-xl font-semibold text-white flex items-center">
+                <Activity className="h-5 w-5 mr-2" />
+                Actions
+              </h2>
+            </div>
+            
+            <div className="p-4 space-y-3">
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Button 
+                  onClick={() => window.print()}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center"
+                >
+                  <Download className="h-4 w-4 mr-2" />
                   Print Confirmation
                 </Button>
               </motion.div>
               
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Button 
+                  onClick={shareAppointment}
+                  className="w-full bg-amber-500 hover:bg-amber-600 flex items-center justify-center"
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share Appointment
+                </Button>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 <Button 
                   onClick={() => navigate('/')}
-                  className="w-full bg-blue-500 hover:bg-blue-600"
+                  className="w-full bg-gray-600 text-gray-800 hover:bg-gray-400 flex items-center justify-center"
                 >
+                  <Home className="h-4 w-4 mr-2" />
                   Back to Home
                 </Button>
               </motion.div>
             </div>
           </motion.div>
+          
+          {/* QR Code Card */}
+          <motion.div 
+            className="bg-white rounded-xl shadow-md overflow-hidden"
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 1.3 }}
+          >
+            <div className="bg-indigo-500 px-6 py-4">
+              <h2 className="text-xl font-semibold text-white flex items-center">
+                <Check className="h-5 w-5 mr-2" />
+                Booking Reference
+              </h2>
+            </div>
+            
+            <div className="p-6 flex flex-col items-center">
+              {/* Placeholder QR code */}
+              <div className="h-32 w-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <rect x="10" y="10" width="30" height="30" fill="#4F46E5" />
+                  <rect x="60" y="10" width="30" height="30" fill="#4F46E5" />
+                  <rect x="10" y="60" width="30" height="30" fill="#4F46E5" />
+                  <rect x="60" y="60" width="10" height="10" fill="#4F46E5" />
+                  <rect x="80" y="60" width="10" height="10" fill="#4F46E5" />
+                  <rect x="60" y="80" width="10" height="10" fill="#4F46E5" />
+                  <rect x="80" y="80" width="10" height="10" fill="#4F46E5" />
+                  <rect x="45" y="45" width="10" height="10" fill="#4F46E5" />
+                </svg>
+              </div>
+              
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-500">Booking Reference</p>
+                <p className="font-bold text-indigo-600 text-xl mt-1">
+                  {/* Generate a fake booking reference */}
+                  {`VX${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`}
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Show this QR code when you arrive at the center
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
       </div>
+      
+      {/* Bottom CTA */}
+      <motion.div 
+        className="mt-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-6 shadow-lg text-white flex flex-col md:flex-row justify-between items-center"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.5 }}
+      >
+        <div>
+          <h3 className="text-lg font-semibold">Need to make changes?</h3>
+          <p className="text-purple-100">
+            Call us at {centerDetails?.phone || "+977-1-4123456"} to reschedule or cancel your appointment.
+          </p>
+        </div>
+        <Button 
+          onClick={() => navigate('/support')}
+          className="mt-4 md:mt-0  bg-purple-500 text-indigo-700 hover:bg-gray-100 hover:text-black flex items-center"
+        >
+          Contact Support
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </motion.div>
     </motion.div>
   );
 }

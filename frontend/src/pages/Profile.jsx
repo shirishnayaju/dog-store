@@ -24,10 +24,10 @@ import {
   DollarSign,
   ShoppingBag,
   AlertCircle,
-  Check
+  Check,
+  Trash2
 } from 'lucide-react';
 
-// Helper function to format date
 const formatDate = (dateString) => {
   if (!dateString) return "Not specified";
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -37,13 +37,11 @@ const formatDate = (dateString) => {
   });
 };
 
-// Helper function to format time
 const formatTime = (timeString) => {
   if (!timeString) return "Not specified";
   return timeString;
 };
 
-// Status badge component
 const StatusBadge = ({ status }) => {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -99,7 +97,6 @@ export default function ProfilePage() {
           throw new Error("User email not available.");
         }
 
-        // Fetch orders
         const ordersResponse = await axios.get(`http://localhost:4001/api/users/${encodeURIComponent(user.email)}/orders`, {
           headers: {
             "Content-Type": "application/json",
@@ -107,7 +104,6 @@ export default function ProfilePage() {
           }
         });
 
-        // Fetch vaccination bookings
         const vaccinationsResponse = await axios.get(`http://localhost:4001/api/users/${encodeURIComponent(user.email)}/vaccinations`, {
           headers: {
             "Content-Type": "application/json",
@@ -138,9 +134,25 @@ export default function ProfilePage() {
     navigate("/home");
   };
 
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm("Are you sure you want to delete this order?")) return;
+
+    try {
+      await axios.delete(`http://localhost:4001/api/orders/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`
+        }
+      });
+
+      setOrders(orders.filter(order => order._id !== orderId));
+    } catch (err) {
+      console.error("Error deleting order:", err);
+      setError(err.response?.data?.message || "Failed to delete order.");
+    }
+  };
+
   const totalSpent = orders.reduce((sum, order) => sum + Number(order.total), 0).toFixed(2);
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-16 flex items-center justify-center">
@@ -154,8 +166,7 @@ export default function ProfilePage() {
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12">
-      {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-8 mb-6">
+      <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-8 mb-6 rounded-xl">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-bold mb-2 flex items-center">
             <UserCircle className="mr-2" /> My Profile
@@ -166,9 +177,7 @@ export default function ProfilePage() {
 
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Profile Section */}
           <div className="col-span-1 space-y-6">
-            {/* Profile Card */}
             <div className="bg-white rounded-xl shadow-sm p-6 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
               
@@ -187,7 +196,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-2 gap-4 w-full">
                   <Button 
                     variant="outline"
-                    className="border border-blue-200 text-blue-600 hover:bg-blue-50 flex items-center justify-center"
+                    className="border border-blue-200 text-blue-600 hover:bg-blue-300 hover:text-black flex items-center justify-center"
                     onClick={() => navigate("/edit-profile")}
                   >
                     <Edit className="w-4 h-4 mr-2" />
@@ -205,7 +214,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Account Summary Card */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Account Summary</h2>
               <div className="grid grid-cols-2 gap-4">
@@ -226,7 +234,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Quick Actions Card */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Quick Actions</h2>
               <div className="space-y-2">
@@ -250,9 +257,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Order and Vaccination Bookings Section */}
           <div className="col-span-1 md:col-span-2">
-            {/* Tabs */}
             <div className="flex border-b mb-6">
               <button 
                 className={`py-3 px-6 font-medium text-sm ${activeTab === "orders" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
@@ -274,7 +279,6 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Tab Content */}
             {activeTab === "orders" && (
               <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div className="p-6 border-b">
@@ -298,7 +302,17 @@ export default function ProfilePage() {
                             <h3 className="font-medium text-gray-800 mb-1">Order #{order._id.substring(order._id.length - 8)}</h3>
                             <p className="text-sm text-gray-500">Placed on {formatDate(order.createdAt || new Date())}</p>
                           </div>
-                          <StatusBadge status={order.status} />
+                          <div className="flex items-center gap-2">
+                            <StatusBadge status={order.status} />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:bg-blue-200 hover:text-red-700"
+                              onClick={() => handleDeleteOrder(order._id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
 
                         <div className="mt-4 bg-gray-50 rounded-lg p-4">
@@ -340,7 +354,7 @@ export default function ProfilePage() {
                     <Button 
                       variant="outline" 
                       className="mt-4"
-                      onClick={() => navigate("/shop")}
+                      onClick={() => navigate("/products")}
                     >
                       Start Shopping
                     </Button>
@@ -416,7 +430,7 @@ export default function ProfilePage() {
                         <div className="mt-4 flex justify-end">
                           <Button
                             variant="outline"
-                            className="text-blue-600 hover:bg-blue-50 border-blue-200 flex items-center"
+                            className=" hover:bg-blue-800 border-blue-200 flex items-center"
                             onClick={() => navigate("/MyBookings", { state: { bookingId: booking._id } })}
                           >
                             View details
@@ -433,7 +447,7 @@ export default function ProfilePage() {
                     <Button 
                       variant="outline" 
                       className="mt-4"
-                      onClick={() => navigate("/book-vaccination")}
+                      onClick={() => navigate("/vaccination")}
                     >
                       Book a Vaccination
                     </Button>

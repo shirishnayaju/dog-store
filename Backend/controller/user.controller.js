@@ -157,3 +157,50 @@ export const checkEmail = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// Update a user by ID - For editing customer names
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    // Validate request
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ message: "Name is required" });
+    }
+
+    // Find and update the user
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { name },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error("Update user error:", error);
+    res.status(500).json({ message: "Failed to update user", error: error.message });
+  }
+};
+
+// Delete a user by ID
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const deletedUser = await User.findByIdAndDelete(id);
+    
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    res.status(200).json({ message: "User deleted successfully", _id: id });
+  } catch (error) {
+    console.error("Delete user error:", error);
+    res.status(500).json({ message: "Failed to delete user", error: error.message });
+  }
+};
