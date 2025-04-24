@@ -376,7 +376,7 @@ export default function Checkout() {
                   <Button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="mt-4 w-1/3 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg"
+                    className="mt-4 w-1/3 py-3 bg-yellow-800 hover:bg-yellow-700 text-gray-800 font-medium rounded-lg"
                   >
                     Back
                   </Button>
@@ -462,7 +462,7 @@ export default function Checkout() {
                   <Button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="mt-2 w-1/3 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg"
+                    className="mt-2 w-1/3 py-3 bg-yellow-800 hover:bg-yellow-700 text-gray-800 font-medium rounded-lg"
                   >
                     Back
                   </Button>

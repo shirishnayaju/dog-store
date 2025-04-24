@@ -459,7 +459,7 @@ export function ProductModal({
                     <Button
                       type="button"
                       onClick={handlePrevStep}
-                      className="bg-gray-300 hover:bg-gray-400 text-gray-800"
+                      className="bg-yellow-800 hover:bg-yellow-700 text-gray-800"
                     >
                       Back
                     </Button>
@@ -568,7 +568,7 @@ export function ProductModal({
                     <Button
                       type="button"
                       onClick={handlePrevStep}
-                      className="bg-gray-300 hover:bg-gray-400 text-gray-800"
+                      className="bg-yellow-800 hover:bg-yellow-700 text-gray-800"
                     >
                       Back
                     </Button>

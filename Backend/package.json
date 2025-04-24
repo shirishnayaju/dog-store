@@ -25,6 +25,7 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
     "khalti-checkout-web": "^2.2.0",
     "lucide-react": "^0.487.0",
@@ -33,6 +34,8 @@
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.7",
     "otp-generator": "^4.0.1",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
     "path": "^0.12.7"
   }
 }

@@ -443,7 +443,7 @@ export default function ProductDetails() {
                   className="rounded-l-lg bg-gray-200 hover:bg-gray-300 text-gray-700"
                   disabled={quantity <= 1}
                 >
-                  <MinusCircle className="w-5 h-5" />
+                  <MinusCircle className="w-5 h-5 text-blue-800 " />
                 </Button>
                 <span className="bg-white w-12 h-10 flex items-center justify-center border-y border-gray-200 text-lg font-medium">
                   {quantity}
@@ -453,7 +453,7 @@ export default function ProductDetails() {
                   className="rounded-r-lg bg-gray-200 hover:bg-gray-300 text-gray-700"
                   disabled={quantity >= 5}
                 >
-                  <PlusCircle className="w-5 h-5" />
+                  <PlusCircle className="w-5 h-5  text-blue-800" />
                 </Button>
               </div>
               <span className="text-sm text-gray-500">(Max 5 per order)</span>
@@ -583,7 +583,7 @@ export default function ProductDetails() {
             Similar Products
             {product.category && (
               <>
-                <span className="mx-2 text-gray-400">in</span>
+                <span className="mx-2 text-yellow-500">in</span>
                 <span className="text-blue-600 flex items-center gap-2">
                   {product.category}
                   <span>{getCategoryIcon(product.category)}</span>

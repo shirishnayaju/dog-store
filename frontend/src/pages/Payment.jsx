@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import khalti from "../Image/khalti.png"; // Adjust path as needed
-import KhaltiCheckout from "khalti-checkout-web";
 import axios from "axios";
 import { 
   CreditCard, 
@@ -23,14 +22,15 @@ const Payment = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Environment variables - ONLY use the public key in frontend
-  const khaltiPublicKey = import.meta.env.VITE_KHALTI_PUBLIC_KEY;
+  // Environment variables
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4001";
+  // Frontend URL (for return_url)
+  const frontendUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
 
   useEffect(() => {
     // Log configuration for debugging
     console.log("API Base URL:", apiBaseUrl);
-    console.log("Khalti Public Key exists:", !!khaltiPublicKey);
+    console.log("Frontend URL:", frontendUrl);
     
     // Validate required environment variables
     if (!apiBaseUrl) {
@@ -38,24 +38,22 @@ const Payment = () => {
       setError("Configuration error. Please contact support.");
       return;
     }
-
-    if (!khaltiPublicKey) {
-      console.error("Khalti public key missing!");
-      setError("Online payments temporarily unavailable. Please try cash on delivery.");
-    }
-  }, [khaltiPublicKey, apiBaseUrl]);
+  }, [apiBaseUrl, frontendUrl]);
 
   useEffect(() => {
     // Check if we're returning from Khalti with query params
     const urlParams = new URLSearchParams(window.location.search);
     const pidx = urlParams.get('pidx');
-    const txnId = urlParams.get('txnId');
     const status = urlParams.get('status');
-    const order_id = urlParams.get('order_id');
     
     if (pidx && status) {
       // Handle returning from Khalti with query parameters
-      handleKhaltiReturn({ pidx, txnId, status, order_id });
+      handleKhaltiReturn({ 
+        pidx, 
+        status,
+        transaction_id: urlParams.get('transaction_id'),
+        purchase_order_id: urlParams.get('purchase_order_id')
+      });
       return;
     }
 
@@ -73,7 +71,9 @@ const Payment = () => {
       console.log("Handling Khalti return with params:", params);
       
       // Send to your backend to verify with Khalti using the secret key
-      const { data } = await axios.post(`${apiBaseUrl}/payments/verify-khalti-return`, params);
+      const { data } = await axios.post(`${apiBaseUrl}/payments/verify-khalti-lookup`, {
+        pidx: params.pidx
+      });
       
       if (data?.success) {
         navigate("/payment-success", { 
@@ -135,12 +135,7 @@ const Payment = () => {
     setError(null);
   };
 
-  const processKhaltiPayment = () => {
-    if (!khaltiPublicKey) {
-      setError("Payment configuration error: Missing Khalti API key");
-      return;
-    }
-    
+  const processKhaltiPayment = async () => {
     if (!orderDetails?.total) {
       setError("Order total amount is missing");
       return;
@@ -151,86 +146,42 @@ const Payment = () => {
       return;
     }
 
-    // Calculate amount - Khalti expects amount in paisa (1 NPR = 100 paisa)
-    // Ensure a minimum of 100 paisa (1 NPR) and that it's an integer
-    const amountInPaisa = Math.max(100, Math.round((orderDetails.total || 0) * 100));
-    
-    console.log("Payment details:", {
-      orderId: orderDetails._id,
-      amount: orderDetails.total,
-      amountInPaisa: amountInPaisa
-    });
-
-    // Full domain for return URL
-    const returnUrl = `${window.location.origin}/payment?order_id=${orderDetails._id}`;
-    console.log("Return URL:", returnUrl);
-
-    const config = {
-      publicKey: khaltiPublicKey.trim(), // Remove any accidental whitespace
-      productIdentity: orderDetails._id,
-      productName: "Order Payment",
-      productUrl: window.location.origin,
-      amount: amountInPaisa,
-      eventHandler: {
-        onSuccess: (payload) => {
-          console.log("Khalti payment success:", payload);
-          verifyKhaltiPayment(payload);
-        },
-        onError: (err) => {
-          console.error("Khalti payment error:", err);
-          setError("Payment failed. Please try again.");
-        },
-        onClose: () => {
-          console.log("Khalti widget closed");
-        }
-      },
-      paymentPreference: ["KHALTI"],
-      returnUrl: returnUrl,
-    };
-
-    console.log("Khalti config:", {
-      ...config,
-      publicKey: config.publicKey ? "Present (hidden)" : "Missing"
-    });
-
-    try {
-      const checkout = new KhaltiCheckout(config);
-      checkout.show();
-    } catch (err) {
-      console.error("Failed to initialize Khalti:", err);
-      setError("Failed to initialize payment. Please try again or choose another payment method.");
-    }
-  };
-
-  const verifyKhaltiPayment = async (payload) => {
     try {
       setLoading(true);
-      console.log("Verifying payment with backend:", payload);
       
-      // Send payment token to your backend for verification
-      const { data } = await axios.post(`${apiBaseUrl}/payments/verify-khalti`, {
-        token: payload.token,
-        amount: payload.amount,
+      // Calculate amount - Khalti expects amount in paisa (1 NPR = 100 paisa)
+      const amountInPaisa = Math.max(1000, Math.round((orderDetails.total || 0) * 100));
+      
+      console.log("Payment details:", {
         orderId: orderDetails._id,
+        amount: orderDetails.total,
+        amountInPaisa,
+        frontendUrl
       });
 
-      console.log("Backend verification response:", data);
+      // Initialize payment on server side - using frontendUrl for return URL
+      const response = await axios.post(`${apiBaseUrl}/payments/initiate-payment`, {
+        purchase_order_id: orderDetails._id,
+        purchase_order_name: `Order #${orderDetails._id.substring(0, 8)}`,
+        amount: amountInPaisa,
+        customer_info: {
+          name: orderDetails.customer?.name || "Customer",
+          email: orderDetails.customer?.email || "",
+          phone: orderDetails.customer?.phone || ""
+        },
+        // The key difference - use the frontend URL for the return URL
+        return_url: `${frontendUrl}/payment-success`
+      });
 
-      if (data?.success) {
-        navigate("/payment-success", { 
-          state: { 
-            paymentDetails: data.data,
-            orderDetails,
-            orderItems,
-            paymentMethod: "khalti"
-          } 
-        });
+      if (response.data?.payment_url) {
+        // Redirect to Khalti payment page
+        window.location.href = response.data.payment_url;
       } else {
-        setError(data?.message || "Payment verification failed");
+        setError("Failed to initiate payment");
       }
     } catch (err) {
-      console.error("Backend verification error:", err);
-      setError(err.response?.data?.message || "Payment verification failed");
+      console.error("Payment initiation error:", err);
+      setError(err.response?.data?.message || "Failed to initiate payment");
     } finally {
       setLoading(false);
     }

@@ -368,7 +368,7 @@ export default function BookingConfirm() {
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              Vaccination Booking Confirmed!
+              Vaccination Booking Appointment request has been sent to Admin!
             </motion.h1>
             <motion.p 
               className="text-white/90"
@@ -376,7 +376,7 @@ export default function BookingConfirm() {
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              Your appointment has been successfully scheduled for your pet.
+              Your appointment confirmation mail will be sent to your respected mail if it has been successfully scheduled and approved by admin.
             </motion.p>
           </div>
         </div>
