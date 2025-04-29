@@ -51,6 +51,39 @@ export const login = async (req, res) => {
   }
 };
 
+// Login with Google
+export const loginWithGoogle = async (req, res) => {
+  try {
+    const { email, googleData } = req.body;
+    
+    if (!email || !googleData) {
+      return res.status(400).json({ message: "Email and Google account data are required" });
+    }
+    
+    // Find the user by email
+    const user = await User.findOne({ email });
+    
+    // If user doesn't exist, return error suggesting to sign up
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this Google email. Please sign up first." });
+    }
+    
+    // Return user data (similar to normal login)
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+    
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(500).json({ message: "Server error during Google login" });
+  }
+};
+
 // Forgot Password (Send OTP)
 export const forgotPassword = async (req, res) => {
   try {
@@ -202,5 +235,49 @@ export const deleteUser = async (req, res) => {
   } catch (error) {
     console.error("Delete user error:", error);
     res.status(500).json({ message: "Failed to delete user", error: error.message });
+  }
+};
+
+// Google Sign-up - Creates a user account with Google data
+export const completeGoogleSignup = async (req, res) => {
+  try {
+    const { googleData } = req.body;
+    
+    if (!googleData || !googleData.email || !googleData.name) {
+      return res.status(400).json({ message: "Google account data is incomplete" });
+    }
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: googleData.email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User with this email already exists" });
+    }
+    
+    // Generate a random password since Google OAuth doesn't provide one
+    const randomPassword = Math.random().toString(36).slice(-10);
+    const hashPassword = await bcryptjs.hash(randomPassword, 10);
+    
+    // Create new user with Google data
+    const newUser = new User({
+      name: googleData.name,
+      email: googleData.email,
+      password: hashPassword,
+      // You can add additional fields like googleId if needed
+    });
+    
+    await newUser.save();
+    
+    res.status(201).json({ 
+      message: "User created successfully with Google account",
+      user: {
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role
+      }
+    });
+    
+  } catch (error) {
+    console.error("Google signup error:", error);
+    res.status(500).json({ message: "Server error during Google signup" });
   }
 };

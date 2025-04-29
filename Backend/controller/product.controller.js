@@ -29,10 +29,10 @@ export const addProduct = async (req, res) => {
     // Save product to database
     const savedProduct = await newProduct.save();
     
-    // Create initial rating document (optional)
+    // Create initial rating document with minimum valid rating
     const initialRating = new Rating({
       productId: savedProduct._id,
-      rating: 0 // Initial rating (can be set to 0 or null based on your requirements)
+      rating: 1  // Set to minimum valid rating instead of 0
     });
     await initialRating.save();
     

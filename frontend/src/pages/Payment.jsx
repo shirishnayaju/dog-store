@@ -337,7 +337,7 @@ const Payment = () => {
                                 </span>
                                 {item.name}
                               </div>
-                              <span>${item.price?.toFixed(2)}</span>
+                              <span>Rs {item.price?.toFixed(2)}</span>
                             </div>
                           ))
                         ) : (
@@ -349,7 +349,7 @@ const Payment = () => {
                     <div className="pt-4 border-t space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Subtotal:</span>
-                        <span>${orderDetails.total?.toFixed(2)}</span>
+                        <span>Rs {orderDetails.total?.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Shipping:</span>
@@ -357,7 +357,7 @@ const Payment = () => {
                       </div>
                       <div className="flex justify-between pt-3 border-t text-lg font-bold text-blue-600">
                         <span>Total:</span>
-                        <span>${orderDetails.total?.toFixed(2)}</span>
+                        <span>Rs {orderDetails.total?.toFixed(2)}</span>
                       </div>
                     </div>
                   </>

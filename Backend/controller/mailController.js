@@ -29,93 +29,160 @@ export const sendOrderStatusEmail = async (req, res) => {
     // Get list of product names
     const productList = orderDetails.products && orderDetails.products.length > 0
       ? orderDetails.products.map(product => 
-          `<li>${product.name} (${product.quantity} x $${parseFloat(product.price).toFixed(2)})</li>`
+          `<li style="margin-bottom: 8px;">${product.name} <span style="color: #666;">(${product.quantity} × $${parseFloat(product.price).toFixed(2)})</span></li>`
         ).join('')
       : '<li>No products found</li>';
     
-    // Company logo - assuming you have a URL for your logo
-    // If you don't have an actual URL, you would need to host this image somewhere
+    // Company logo and brand header
     const logoHtml = `
-      <div style="text-align: center; margin-bottom: 20px;">
-        <img src="https://scontent.fktm21-2.fna.fbcdn.net/v/t39.30808-6/299602768_486726786790155_4876935833175453117_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=ytDg_olhTFcQ7kNvwGKXe6y&_nc_oc=Adm6CM1oL1K2Vo39kD-YK0u7zmVnP0qTRio7C8uxESXwveen6xCIiA36-935tTxJd0yw7EAXty_fIgZn4wWzSlFQ&_nc_zt=23&_nc_ht=scontent.fktm21-2.fna&_nc_gid=4xm9OkBeERVxS1S5cgPtMw&oh=00_AfE_noDDL3f8lQHBErPeibuKHRpfp7qWBbFU0IWjT2IjLw&oe=67F9E2DA" alt="GharPaluwa Logo" style="max-width: 150px; height: auto;" />
-        <h2 style="color: #3b82f6; text-align: center; margin-top: 10px;">GharPaluwa</h2>
+      <div style="text-align: center; margin-bottom: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 5px 5px 0 0;">
+        <img src="https://scontent.fktm21-2.fna.fbcdn.net/v/t39.30808-6/299602768_486726786790155_4876935833175453117_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=ytDg_olhTFcQ7kNvwGKXe6y&_nc_oc=Adm6CM1oL1K2Vo39kD-YK0u7zmVnP0qTRio7C8uxESXwveen6xCIiA36-935tTxJd0yw7EAXty_fIgZn4wWzSlFQ&_nc_zt=23&_nc_ht=scontent.fktm21-2.fna&_nc_gid=4xm9OkBeERVxS1S5cgPtMw&oh=00_AfE_noDDL3f8lQHBErPeibuKHRpfp7qWBbFU0IWjT2IjLw&oe=67F9E2DA" alt="GharPaluwa Logo" style="max-width: 120px; height: auto;" />
+        <h2 style="color: #3b82f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin-top: 15px; margin-bottom: 0;">GharPaluwa</h2>
+        <p style="color: #6b7280; margin-top: 5px; font-style: italic;">Premium Pet Care Services</p>
+      </div>
+    `;
+
+    // Footer for all emails
+    const footerHtml = `
+      <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #eaeaea; color: #6b7280; font-size: 14px;">
+        <p style="margin-bottom: 10px;">If you need assistance, please contact our support team at <a href="mailto:shirishnayaju@gmail.com" style="color: #3b82f6; text-decoration: none;">shirishnayaju@gmail.com</a></p>
+        <div style="margin-top: 20px; text-align: center;">
+          <p style="margin-bottom: 5px;">© 2025 GharPaluwa. All rights reserved.</p>
+          <p style="margin-bottom: 5px; font-size: 12px;">
+            <a href="https://gharpaluwa.com/privacy" style="color: #6b7280; text-decoration: none; margin: 0 10px;">Privacy Policy</a> | 
+            <a href="https://gharpaluwa.com/terms" style="color: #6b7280; text-decoration: none; margin: 0 10px;">Terms of Service</a>
+          </p>
+        </div>
       </div>
     `;
     
     switch(status.toLowerCase()) {
       case 'approved':
         return {
-          subject: `Your GharPaluwa Order is Approved - Thank You!`,
+          subject: `Your GharPaluwa Order #${orderId} is Approved`,
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 5px;">
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; border: 1px solid #e5e7eb; border-radius: 5px; color: #374151;">
               ${logoHtml}
-              <h2 style="color: #4CAF50; text-align: center;">Order Approved!</h2>
-              <p>Hello ${customerName},</p>
-              <p>Great news! Your order has been approved and is being processed.</p>
-              
-              <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 15px 0;">
-                <h3 style="margin-top: 0; color: #333;">Order Summary:</h3>
-                <p><strong>Order ID:</strong> ${orderId}</p>
-                <p><strong>Products:</strong></p>
-                <ul style="padding-left: 20px;">
-                  ${productList}
-                </ul>
-                <p><strong>Order Total:</strong> $${orderTotal}</p>
+              <div style="padding: 20px 30px;">
+                <h2 style="color: #4CAF50; text-align: center; margin-bottom: 25px; font-weight: 600;">Order Approved</h2>
+                <p style="margin-bottom: 15px;">Hello ${customerName},</p>
+                <p style="margin-bottom: 20px; line-height: 1.5;">Great news! Your order <strong>#${orderId}</strong> has been approved and is now being processed. We're working quickly to prepare your items for shipping.</p>
+                
+                <div style="background-color: #f9fafb; padding: 20px; border-radius: 5px; margin: 25px 0; border-left: 4px solid #3b82f6;">
+                  <h3 style="margin-top: 0; color: #1f2937; font-size: 18px; font-weight: 600;">Order Summary</h3>
+                  <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <tr>
+                      <td style="padding: 8px 0; color: #4b5563; width: 40%;">Order ID:</td>
+                      <td style="padding: 8px 0; font-weight: 600;">#${orderId}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0; color: #4b5563; vertical-align: top;">Products:</td>
+                      <td style="padding: 8px 0;">
+                        <ul style="padding-left: 20px; margin: 0;">
+                          ${productList}
+                        </ul>
+                      </td>
+                    </tr>
+                    <tr style="border-top: 1px solid #e5e7eb;">
+                      <td style="padding: 12px 0; color: #4b5563; font-weight: 600;">Order Total:</td>
+                      <td style="padding: 12px 0; font-weight: 700; color: #1f2937;">$${orderTotal}</td>
+                    </tr>
+                  </table>
+                </div>
+                
+                <p style="margin-bottom: 15px; line-height: 1.5;">We'll notify you once your order ships with tracking information. Thank you for shopping with GharPaluwa!</p>
+                <p style="margin-bottom: 0; line-height: 1.5;">We hope your pet enjoys our premium products.</p>
+                
+                ${footerHtml}
               </div>
-              
-              <p>We'll notify you once your order ships. Thank you for shopping with GharPaluwa!</p>
-              <p>If you have any questions, please don't hesitate to contact our customer service.</p>
-              <p style="margin-top: 30px;">Best regards,<br>The GharPaluwa Team</p>
             </div>
           `
         };
       case 'cancelled':
         return {
-          subject: `Your GharPaluwa Order has been Cancelled`,
+          subject: `Your GharPaluwa Order #${orderId} has been Cancelled`,
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 5px;">
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; border: 1px solid #e5e7eb; border-radius: 5px; color: #374151;">
               ${logoHtml}
-              <h2 style="color: #f44336; text-align: center;">Order Cancelled</h2>
-              <p>Hello ${customerName},</p>
-              <p>We're sorry to inform you that your order has been cancelled.</p>
-              
-              <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 15px 0;">
-                <h3 style="margin-top: 0; color: #333;">Order Summary:</h3>
-                <p><strong>Order ID:</strong> ${orderId}</p>
-                <p><strong>Products:</strong></p>
-                <ul style="padding-left: 20px;">
-                  ${productList}
-                </ul>
-                <p><strong>Order Total:</strong> $${orderTotal}</p>
+              <div style="padding: 20px 30px;">
+                <h2 style="color: #ef4444; text-align: center; margin-bottom: 25px; font-weight: 600;">Order Cancelled</h2>
+                <p style="margin-bottom: 15px;">Hello ${customerName},</p>
+                <p style="margin-bottom: 20px; line-height: 1.5;">We're sorry to inform you that your order <strong>#${orderId}</strong> has been cancelled.</p>
+                
+                <div style="background-color: #f9fafb; padding: 20px; border-radius: 5px; margin: 25px 0; border-left: 4px solid #ef4444;">
+                  <h3 style="margin-top: 0; color: #1f2937; font-size: 18px; font-weight: 600;">Order Summary</h3>
+                  <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <tr>
+                      <td style="padding: 8px 0; color: #4b5563; width: 40%;">Order ID:</td>
+                      <td style="padding: 8px 0; font-weight: 600;">#${orderId}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0; color: #4b5563; vertical-align: top;">Products:</td>
+                      <td style="padding: 8px 0;">
+                        <ul style="padding-left: 20px; margin: 0;">
+                          ${productList}
+                        </ul>
+                      </td>
+                    </tr>
+                    <tr style="border-top: 1px solid #e5e7eb;">
+                      <td style="padding: 12px 0; color: #4b5563; font-weight: 600;">Order Total:</td>
+                      <td style="padding: 12px 0; font-weight: 700; color: #1f2937;">$${orderTotal}</td>
+                    </tr>
+                  </table>
+                </div>
+                
+                <p style="margin-bottom: 15px; line-height: 1.5;">If you have any questions about this cancellation or would like to place a new order, please contact our customer service team.</p>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                  <a href="https://gharpaluwa.com/shop" style="display: inline-block; background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 500;">Continue Shopping</a>
+                </div>
+                
+                ${footerHtml}
               </div>
-              
-              <p>If you have any questions about this cancellation or would like to place a new order, please contact our customer service team.</p>
-              <p style="margin-top: 30px;">Best regards,<br>The GharPaluwa Team</p>
             </div>
           `
         };
       default:
         return {
-          subject: `Your GharPaluwa Order Status Update`,
+          subject: `Your GharPaluwa Order #${orderId} Status Update: ${status.charAt(0).toUpperCase() + status.slice(1)}`,
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 5px;">
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; border: 1px solid #e5e7eb; border-radius: 5px; color: #374151;">
               ${logoHtml}
-              <h2 style="color: #2196F3; text-align: center;">Order Status Update</h2>
-              <p>Hello ${customerName},</p>
-              <p>Your order status has been updated to: <strong>${status}</strong></p>
-              
-              <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 15px 0;">
-                <h3 style="margin-top: 0; color: #333;">Order Summary:</h3>
-                <p><strong>Order ID:</strong> ${orderId}</p>
-                <p><strong>Products:</strong></p>
-                <ul style="padding-left: 20px;">
-                  ${productList}
-                </ul>
-                <p><strong>Order Total:</strong> $${orderTotal}</p>
+              <div style="padding: 20px 30px;">
+                <h2 style="color: #3b82f6; text-align: center; margin-bottom: 25px; font-weight: 600;">Order Status Update</h2>
+                <p style="margin-bottom: 15px;">Hello ${customerName},</p>
+                <p style="margin-bottom: 20px; line-height: 1.5;">Your order <strong>#${orderId}</strong> status has been updated to: <strong style="color: #3b82f6;">${status.charAt(0).toUpperCase() + status.slice(1)}</strong></p>
+                
+                <div style="background-color: #f9fafb; padding: 20px; border-radius: 5px; margin: 25px 0; border-left: 4px solid #3b82f6;">
+                  <h3 style="margin-top: 0; color: #1f2937; font-size: 18px; font-weight: 600;">Order Summary</h3>
+                  <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <tr>
+                      <td style="padding: 8px 0; color: #4b5563; width: 40%;">Order ID:</td>
+                      <td style="padding: 8px 0; font-weight: 600;">#${orderId}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0; color: #4b5563; vertical-align: top;">Products:</td>
+                      <td style="padding: 8px 0;">
+                        <ul style="padding-left: 20px; margin: 0;">
+                          ${productList}
+                        </ul>
+                      </td>
+                    </tr>
+                    <tr style="border-top: 1px solid #e5e7eb;">
+                      <td style="padding: 12px 0; color: #4b5563; font-weight: 600;">Order Total:</td>
+                      <td style="padding: 12px 0; font-weight: 700; color: #1f2937;">$${orderTotal}</td>
+                    </tr>
+                  </table>
+                </div>
+                
+                <p style="margin-bottom: 15px; line-height: 1.5;">If you have any questions about your order, please don't hesitate to contact our customer service team.</p>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                  <a href="https://gharpaluwa.com/my-orders/${orderId}" style="display: inline-block; background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 500;">View Order Details</a>
+                </div>
+                
+                ${footerHtml}
               </div>
-              
-              <p>If you have any questions, please don't hesitate to contact our customer service.</p>
-              <p style="margin-top: 30px;">Best regards,<br>The GharPaluwa Team</p>
             </div>
           `
         };

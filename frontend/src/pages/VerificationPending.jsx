@@ -22,20 +22,22 @@ export default function VerificationPending() {
   const [canResend, setCanResend] = useState(false);
   const [message, setMessage] = useState(null);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   
   // Get user data from navigation state
   const userData = location.state || {};
   
   // API URL from environment variable
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4001/api";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4001";
   
   // Effect to handle initial OTP sending - runs only once on component mount
   useEffect(() => {
-    // If we have email, send OTP immediately on component mount, but only once
-    if (userData.email) {
+    // If we have email and OTP hasn't been sent yet, send it only once
+    if (userData.email && !otpSent) {
       sendOTP(userData.email);
+      setOtpSent(true);
     }
-  }, [userData.email]); // Only depends on userData.email
+  }, [userData.email, otpSent]); // Include otpSent in the dependency array
   
   // Separate effect to handle the timer
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function VerificationPending() {
     try {
       console.log("Sending OTP to:", email);
       
-      const response = await axios.post(`${API_URL}/otp/send-otp`, { 
+      const response = await axios.post(`${API_URL}/api/otp/send-otp`, { 
         email: email,
         purpose: 'verification' // Specify this is for account verification
       });
@@ -101,7 +103,7 @@ export default function VerificationPending() {
       });
       
       // Verify the OTP
-      const response = await axios.post(`${API_URL}/otp/verify-otp`, {
+      const response = await axios.post(`${API_URL}/api/otp/verify-otp`, {
         email: userData.email,
         otp: trimmedCode
       });
@@ -122,7 +124,7 @@ export default function VerificationPending() {
             });
           } else if (userData.method === 'google') {
             console.log("Completing Google signup with data:", userData.googleData);
-            await axios.post(`${API_URL}/auth/complete-google-signup`, {
+            await axios.post(`http://localhost:4001/user/auth/complete-google-signup`, {
               googleData: userData.googleData
             });
           }

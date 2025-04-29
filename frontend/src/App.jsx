@@ -33,6 +33,7 @@ import Bookings from "./pages/Bookings";
 import ProductForm from './pages/ProductForm';
 import Payment from "./pages/payment";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import AddProducts from "./pages/AddProducts";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
               <Route path="/admin" element={<Admin />}>
                 <Route index element={<Dashboard />} />
                 <Route path="products" element={<AdminProducts />} />
+                <Route path="addproducts" element={<AddProducts />} />
                 <Route path="orders" element={<Orders />} />
                 <Route path="customers" element={<Customers />} />
                 <Route path="bookings" element={<Bookings />} />

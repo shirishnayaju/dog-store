@@ -83,15 +83,15 @@ function ProductCard({ product, categoryIcons }) {
             {product.oldPrice ? (
               <div className="flex items-center">
                 <span className="text-lg font-bold text-blue-600">
-                  ${product.price.toFixed(2)}
+                  Rs {product.price.toFixed(2)}
                 </span>
                 <span className="text-gray-400 text-sm line-through ml-2">
-                  ${product.oldPrice.toFixed(2)}
+                  Rs {product.oldPrice.toFixed(2)}
                 </span>
               </div>
             ) : (
               <span className="text-lg font-bold text-blue-600">
-                ${product.price.toFixed(2)}
+                Rs {product.price.toFixed(2)}
               </span>
             )}
             <span className="text-xs text-gray-500">

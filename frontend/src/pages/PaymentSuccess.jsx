@@ -111,7 +111,7 @@ const PaymentSuccess = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-bold">
-                    NPR {orderDetails.total?.toFixed(2)}
+                    Rs {orderDetails.total?.toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -143,7 +143,7 @@ const PaymentSuccess = () => {
                       </span>
                       <span className="text-gray-800">{item.name}</span>
                     </div>
-                    <span className="font-medium">NPR {(item.price * item.quantity)?.toFixed(2)}</span>
+                    <span className="font-medium">Rs {(item.price * item.quantity)?.toFixed(2)}</span>
                   </div>
                 ))}
               </div>

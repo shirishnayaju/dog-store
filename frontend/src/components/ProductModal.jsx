@@ -330,7 +330,7 @@ export function ProductModal({
                 <div>
                   <p className="text-gray-700 font-medium">{vaccinationCenter}</p>
                   {productPrice && (
-                    <p className="text-purple-600 font-bold">${productPrice.toFixed(2)}</p>
+                    <p className="text-purple-600 font-bold">Rs {productPrice.toFixed(2)}</p>
                   )}
                 </div>
                 <PawPrint className="w-8 h-8 text-purple-500" />
@@ -558,7 +558,7 @@ export function ProductModal({
                       {productPrice && (
                         <>
                           <div className="text-gray-600">Price:</div>
-                          <div className="font-medium">${productPrice.toFixed(2)}</div>
+                          <div className="font-medium">Rs {productPrice.toFixed(2)}</div>
                         </>
                       )}
                     </div>

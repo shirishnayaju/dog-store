@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "../components/ui/button";
-import { FaBone, FaFootballBall, FaBed, FaTag, FaUtensils, FaPills, FaHeart } from 'react-icons/fa';
+import { FaBone, FaFootballBall, FaBed, FaTag, FaLink, FaUtensils, FaPills, FaHeart } from 'react-icons/fa';
 import { ArrowRight, ShoppingBag, UserPlus, LogIn, Search } from 'lucide-react';
 import Puppies from '../Image/puppies.png'; 
 import axios from 'axios';
@@ -34,8 +34,10 @@ export default function Home() {
     'Toys': <FaFootballBall className="text-amber-800" />,
     'Supplements': <FaPills className="text-red-500" />,
     'Accessories': <FaTag className="text-purple-500" />,
+    'Belts': <FaLink className="text-gray-500" />,
     'Wet Foods': <FaBone className="text-green-500" />,
     'Cage': <FaBed className="text-orange-500" />
+
   };
 
   const categoryColors = {
@@ -44,11 +46,12 @@ export default function Home() {
     'Toys': 'bg-amber-800 hover:bg-amber-900',
     'Supplements': 'bg-red-600 hover:bg-red-700',
     'Accessories': 'bg-purple-600 hover:bg-purple-700',
+    'Belts': 'bg-gray-600 hover:bg-gray-700',
     'Wet Foods': 'bg-green-600 hover:bg-green-700', 
     'Cage': 'bg-orange-600 hover:bg-orange-700'
   };
 
-  const categories = ['All', 'Food', 'Toys', 'Supplements', 'Accessories', 'Wet Foods', 'Cage'];
+  const categories = ['All', 'Food', 'Toys', 'Supplements', 'Accessories', 'Belts','Wet Foods', 'Cage'];
  
   const filteredProducts = visibleCategory === 'All' 
     ? featuredProducts.filter(product => product.name.toLowerCase().includes(searchQuery.toLowerCase()))

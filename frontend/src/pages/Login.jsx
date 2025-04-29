@@ -5,13 +5,45 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input"; 
 import { Label } from "../components/ui/label"; 
 import { useAuth } from '../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
+import { useToast } from '../context/ToastContext'; // Import the toast hook
 
 export default function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
+  const { addToast } = useToast(); // Use the toast hook
   const [loginError, setLoginError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  
+  // Handle Google login
+  const handleGoogleLogin = async (credentialResponse) => {
+    setIsSubmitting(true);
+    setLoginError(null);
+    
+    try {
+      console.log('Attempting Google login with credential:', credentialResponse.credential.substring(0, 10) + '...');
+      console.log('Current origin:', window.location.origin);
+      const response = await loginWithGoogle(credentialResponse.credential);
+      
+      // Show toast notification
+      if (response?.showToast) {
+        addToast(response.showToast);
+      }
+      
+      // Handle navigation after successful login
+      if (response.userData.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+      setLoginError(error.message || "Login with Google failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
   // Handle form submission
   const onSubmit = async (data) => {
@@ -20,12 +52,16 @@ export default function Login() {
     
     try {
       console.log('Attempting login...');
-      const userData = await login(data.email, data.password);
+      const response = await login(data.email, data.password);
       console.log('Login function completed');
-      console.log('User data from server:', userData); // Debug output
+      
+      // Show toast notification
+      if (response?.showToast) {
+        addToast(response.showToast);
+      }
       
       // Handle navigation here after successful login
-      if (userData.role === "admin") {
+      if (response.userData.role === "admin") {
         console.log("User is an admin. Redirecting to /admin");
         navigate("/admin");
       } else {
@@ -39,6 +75,14 @@ export default function Login() {
       } else {
         setLoginError("Login failed. Please check your credentials and try again.");
       }
+      
+      // Show error toast
+      addToast({
+        title: "Login Failed",
+        description: error.message || "Please check your credentials and try again.",
+        type: "error",
+        duration: 4000
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -114,6 +158,21 @@ export default function Login() {
           )}
         </Button>
       </form>
+      
+      <div className="mt-6">
+        <GoogleLogin
+          onSuccess={handleGoogleLogin}
+          onError={(error) => {
+            console.error("Google login error:", error);
+            setLoginError("Google sign-in was unsuccessful. Please try again later.");
+          }}
+          useOneTap
+          className="w-full flex items-center justify-center"
+          disabled={isSubmitting}
+          onGoogleScriptLoadError={(error) => console.error("Google script load error:", error)}
+          cookiePolicy={'single_host_origin'}
+        />
+      </div>
       
       <div className="border-t mt-6 pt-4 text-center">
         <p className="text-gray-600 text-sm">

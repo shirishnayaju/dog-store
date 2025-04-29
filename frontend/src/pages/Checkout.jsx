@@ -448,13 +448,13 @@ export default function Checkout() {
                     {items.map((item) => (
                       <div key={item.id} className="flex justify-between text-sm">
                         <span>{item.quantity} × {item.name}</span>
-                        <span>${(item.price * item.quantity).toFixed(2)}</span>
+                        <span>Rs {(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
                   <div className="mt-3 pt-3 border-t border-gray-200 font-medium flex justify-between">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>Rs {total.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -512,7 +512,7 @@ export default function Checkout() {
                         </div>
                         <span className="text-sm">{item.name}</span>
                       </div>
-                      <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-medium">Rs {(item.price * item.quantity).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -520,7 +520,7 @@ export default function Checkout() {
                 <div className="border-t border-blue-500/30 pt-4 space-y-2">
                   <div className="flex justify-between text-blue-100">
                     <span>Subtotal</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>Rs {total.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-blue-100">
                     <span>Shipping</span>
@@ -528,7 +528,7 @@ export default function Checkout() {
                   </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t border-blue-500/30">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>Rs {total.toFixed(2)}</span>
                   </div>
                   {totalError && <p className="text-red-300 text-sm">{totalError}</p>}
                 </div>

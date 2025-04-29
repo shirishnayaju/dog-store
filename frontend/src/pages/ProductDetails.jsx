@@ -327,9 +327,9 @@ export default function ProductDetails() {
           
           <div className="mb-6">
             <div className="flex items-baseline">
-              <p className="text-3xl font-bold text-blue-600">${product.price.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-blue-600">Rs {product.price.toFixed(2)}</p>
               {product.oldPrice && (
-                <p className="ml-3 text-lg text-gray-500 line-through">${product.oldPrice.toFixed(2)}</p>
+                <p className="ml-3 text-lg text-gray-500 line-through">Rs {product.oldPrice.toFixed(2)}</p>
               )}
               {product.oldPrice && (
                 <span className="ml-3 bg-red-100 text-red-700 text-sm font-medium px-2 py-0.5 rounded">

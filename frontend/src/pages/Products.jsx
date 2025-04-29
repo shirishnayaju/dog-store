@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from "../components/ui/button";
-import { FaBone, FaFootballBall, FaBed, FaTag, FaUtensils, FaPills, FaHeart, FaSearch } from 'react-icons/fa';
+import { FaBone, FaFootballBall, FaBed, FaTag, FaUtensils, FaLink, FaPills, FaHeart, FaSearch } from 'react-icons/fa';
 import { ArrowUpCircle } from 'lucide-react';
 import axios from 'axios';
 import ProductCard from '../components/ProductCard';
@@ -43,29 +43,31 @@ export default function Products() {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  const categories = ['All', 'Food', 'Toys', 'Accessories', 'Wet Foods', 'Cage', 'Supplements'];
   
-  const categoryIcons = {
-    'All': <FaHeart className="text-pink-500" />,
-    'Food': <FaUtensils className="text-yellow-500" />,
-    'Toys': <FaFootballBall className="text-amber-800" />,
-    'Accessories': <FaTag className="text-purple-500" />,
-    'Wet Foods': <FaBone className="text-green-500" />,
-    'Cage': <FaBed className="text-orange-500" />,
-    'Supplements': <FaPills className="text-red-500" />
-  };
-
-  // Category button colors for active state
-  const categoryColors = {
-    'All': 'bg-pink-600 hover:bg-pink-700',
-    'Food': 'bg-yellow-600 hover:bg-yellow-700',
-    'Toys': 'bg-amber-800 hover:bg-amber-900',
-    'Accessories': 'bg-purple-600 hover:bg-purple-700',
-    'Wet Foods': 'bg-green-600 hover:bg-green-700', 
-    'Cage': 'bg-orange-600 hover:bg-orange-700',
-    'Supplements': 'bg-red-600 hover:bg-red-700'
-  };
+    const categories = ['All', 'Food', 'Toys', 'Supplements', 'Accessories', 'Belts','Wet Foods', 'Cage'];
+  
+    const categoryIcons = {
+      'All': <FaHeart className="text-pink-500" />,
+      'Food': <FaUtensils className="text-yellow-500" />,
+      'Toys': <FaFootballBall className="text-amber-800" />,
+      'Supplements': <FaPills className="text-red-500" />,
+      'Accessories': <FaTag className="text-purple-500" />,
+      'Belts': <FaLink className="text-gray-500" />,
+      'Wet Foods': <FaBone className="text-green-500" />,
+      'Cage': <FaBed className="text-orange-500" />
+  
+    };
+  
+    const categoryColors = {
+      'All': 'bg-pink-600 hover:bg-pink-700',
+      'Food': 'bg-yellow-600 hover:bg-yellow-700',
+      'Toys': 'bg-amber-800 hover:bg-amber-900',
+      'Supplements': 'bg-red-600 hover:bg-red-700',
+      'Accessories': 'bg-purple-600 hover:bg-purple-700',
+      'Belts': 'bg-gray-600 hover:bg-gray-700',
+      'Wet Foods': 'bg-green-600 hover:bg-green-700', 
+      'Cage': 'bg-orange-600 hover:bg-orange-700'
+    };
 
   // Filter products by both category and search term
   const filteredProducts = products
@@ -105,7 +107,7 @@ export default function Products() {
     <div className="bg-gradient-to-b from-blue-50 to-white min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section */}
-        <div className="bg-white rounded-2xl shadow-lg mb-12 overflow-hidden">
+        <div className="bg-blue-100 rounded-2xl shadow-lg mb-12 overflow-hidden">
           <div className="relative py-12 px-6 md:px-12 text-center">
             <div className="absolute top-0 left-0 w-full h-full bg-blue-600 opacity-10 z-0"></div>
             <div className="relative z-10">
@@ -118,7 +120,7 @@ export default function Products() {
                 Our Pet Products Collection
               </motion.h1>
               <motion.p
-                className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8"
+                className="text-lg md:text-xl text-black max-w-2xl mx-auto mb-8"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.3 }}

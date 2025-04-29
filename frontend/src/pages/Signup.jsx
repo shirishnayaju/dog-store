@@ -5,11 +5,14 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { GoogleLogin } from '@react-oauth/google';
+import { useToast } from '../context/ToastContext'; // Import the toast hook
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 export default function Signup() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
+  const { addToast } = useToast(); // Use the toast hook
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
   
@@ -28,12 +31,27 @@ export default function Signup() {
       
       if (checkResponse.data.exists) {
         setMessage("❌ This email is already registered. Please login instead.");
+        // Add toast notification for already registered email
+        addToast({
+          title: "Email Already Registered",
+          description: "This email is already registered. Please login instead.",
+          type: "warning",
+          duration: 4000
+        });
         return;
       }
       
       // Store user data temporarily
       // We'll create the user only after verification
       console.log("Initiating signup for:", data.email);
+      
+      // Add toast notification for successful initiation of signup
+      addToast({
+        title: "Verification Required",
+        description: "Please check your email to complete the registration process.",
+        type: "info",
+        duration: 5000
+      });
       
       // Navigate to verification page with user data
       navigate('/verification-pending', { 
@@ -51,6 +69,14 @@ export default function Signup() {
         error.response?.data?.message ||
         "❌ Failed to initiate signup. Please try again later."
       );
+      
+      // Add toast notification for error
+      addToast({
+        title: "Signup Error",
+        description: error.response?.data?.message || "Failed to initiate signup. Please try again later.",
+        type: "error",
+        duration: 4000
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -62,8 +88,9 @@ export default function Signup() {
     
     try {
       // Decode the JWT token to get user info
-      const decoded = jwt_decode(credentialResponse.credential);
+      const decoded = jwtDecode(credentialResponse.credential);
       console.log("Processing Google signup with data:", decoded);
+      console.log('Current origin:', window.location.origin);
       
       // First check if email already exists
       const checkResponse = await axios.post(`${API_URL}/user/check-email`, {
@@ -72,7 +99,31 @@ export default function Signup() {
       
       if (checkResponse.data.exists) {
         setMessage("❌ This Google account is already registered. Please login instead.");
+        // Add toast notification for already registered Google account
+        addToast({
+          title: "Account Already Exists",
+          description: "This Google account is already registered. Please login instead.",
+          type: "warning",
+          duration: 4000
+        });
         return;
+      }
+      
+      // Add toast notification for successful Google sign-up initiation
+      if (decoded.email_verified) {
+        addToast({
+          title: "Google Account Connected",
+          description: "Your Google account is being connected. Please wait...",
+          type: "info",
+          duration: 3000
+        });
+      } else {
+        addToast({
+          title: "Verification Required",
+          description: "Please verify your email to complete the registration.",
+          type: "info",
+          duration: 5000
+        });
       }
       
       // Navigate to verification page with Google data
@@ -92,6 +143,14 @@ export default function Signup() {
         error.response?.data?.message ||
         "❌ Failed to process Google signup. Please try again later."
       );
+      
+      // Add toast notification for Google signup error
+      addToast({
+        title: "Google Signup Error",
+        description: error.response?.data?.message || "Failed to process Google signup. Please try again later.",
+        type: "error",
+        duration: 4000
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -191,19 +250,18 @@ export default function Signup() {
         </Button>
       </form>
       
-      <div className="mt-6 flex items-center">
-        <div className="flex-grow border-t border-gray-200"></div>
-        <span className="px-4 text-gray-500 text-sm font-medium">OR CONTINUE WITH</span>
-        <div className="flex-grow border-t border-gray-200"></div>
-      </div>
-      
       <div className="mt-6">
         <GoogleLogin
           onSuccess={handleGoogleSignup}
-          onError={() => setMessage("❌ Google sign-in was unsuccessful. Please try again later.")}
+          onError={(error) => {
+            console.error("Google signup error:", error);
+            setMessage("❌ Google sign-in was unsuccessful. Please try again later.");
+          }}
           useOneTap
           className="w-full flex items-center justify-center"
           disabled={isSubmitting}
+          onGoogleScriptLoadError={(error) => console.error("Google script load error:", error)}
+          cookiePolicy={'single_host_origin'}
         />
       </div>
       

@@ -33,15 +33,45 @@ export default function EditProfile() {
     setError(null);
     setSuccess(null);
     
-    if (!user || !user.email) {
+    if (!user) {
       setError("User information not available");
       setIsLoading(false);
       return;
     }
     
     try {
-      // Try to use the original endpoint that was working
-      const apiUrl = `http://localhost:4001/user/users/email/${encodeURIComponent(user.email)}`;
+      // First, try to get the user's ID if we don't have it
+      let userId = user._id;
+
+      // If we don't have the user ID, fetch it using the email
+      if (!userId && user.email) {
+        try {
+          const findUserResponse = await axios.post(
+            "http://localhost:4001/user/find-user",
+            { email: user.email },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                ...(user.token && { Authorization: `Bearer ${user.token}` })
+              }
+            }
+          );
+          
+          if (findUserResponse.data && findUserResponse.data._id) {
+            userId = findUserResponse.data._id;
+            console.log("Found user ID:", userId);
+          }
+        } catch (findError) {
+          console.error("Error finding user:", findError);
+        }
+      }
+      
+      if (!userId) {
+        throw new Error("Could not determine user ID for update");
+      }
+
+      // Now use the correct API endpoint with user ID
+      const apiUrl = `http://localhost:4001/user/users/${userId}`;
       console.log("Making API request to:", apiUrl);
       
       const response = await axios.put(
@@ -49,7 +79,9 @@ export default function EditProfile() {
         { name: name },
         {
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            // Add authorization token if available
+            ...(user.token && { Authorization: `Bearer ${user.token}` })
           }
         }
       );
@@ -59,7 +91,8 @@ export default function EditProfile() {
       // Update local user data
       updateUser({
         ...user,
-        name: name
+        name: name,
+        _id: userId // Add the user ID to the local user object for future use
       });
       
       setSuccess("Profile updated successfully");
@@ -82,21 +115,45 @@ export default function EditProfile() {
     setError(null);
     
     try {
-      // First check if user has _id or if we should use email
-      let deleteUrl;
-      if (user && user._id) {
-        deleteUrl = `http://localhost:4001/user/users/${user._id}`;
-      } else if (user && user.email) {
-        deleteUrl = `http://localhost:4001/user/users/email/${encodeURIComponent(user.email)}`;
-      } else {
-        throw new Error("No user identifier available");
+      // First, try to get the user's ID if we don't have it
+      let userId = user._id;
+
+      // If we don't have the user ID, fetch it using the email
+      if (!userId && user.email) {
+        try {
+          const findUserResponse = await axios.post(
+            "http://localhost:4001/user/find-user",
+            { email: user.email },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                ...(user.token && { Authorization: `Bearer ${user.token}` })
+              }
+            }
+          );
+          
+          if (findUserResponse.data && findUserResponse.data._id) {
+            userId = findUserResponse.data._id;
+            console.log("Found user ID for deletion:", userId);
+          }
+        } catch (findError) {
+          console.error("Error finding user for deletion:", findError);
+        }
       }
       
+      if (!userId) {
+        throw new Error("Could not determine user ID for deletion");
+      }
+      
+      // Use the correct API endpoint for deletion
+      const deleteUrl = `http://localhost:4001/user/users/${userId}`;
       console.log("Making delete request to:", deleteUrl);
       
       const response = await axios.delete(deleteUrl, {
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          // Add authorization token if available
+          ...(user.token && { Authorization: `Bearer ${user.token}` })
         }
       });
 

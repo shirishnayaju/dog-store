@@ -312,7 +312,7 @@ const Orders = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <CreditCard className="h-4 w-4 text-gray-400 mr-2" />
-                          <span className="text-sm font-medium text-gray-900">${parseFloat(order.total || 0).toFixed(2)}</span>
+                          <span className="text-sm font-medium text-gray-900">Rs {parseFloat(order.total || 0).toFixed(2)}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -495,8 +495,8 @@ const Orders = () => {
                                         <tr key={idx} className="hover:bg-gray-50">
                                           <td className="px-4 py-3 text-sm text-gray-900">{product.name}</td>
                                           <td className="px-4 py-3 text-sm text-gray-900 text-center">{product.quantity}</td>
-                                          <td className="px-4 py-3 text-sm text-gray-900 text-right">${parseFloat(product.price).toFixed(2)}</td>
-                                          <td className="px-4 py-3 text-sm text-gray-900 text-right font-medium">${(parseFloat(product.price) * product.quantity).toFixed(2)}</td>
+                                          <td className="px-4 py-3 text-sm text-gray-900 text-right">Rs {parseFloat(product.price).toFixed(2)}</td>
+                                          <td className="px-4 py-3 text-sm text-gray-900 text-right font-medium">Rs {(parseFloat(product.price) * product.quantity).toFixed(2)}</td>
                                         </tr>
                                       ))
                                     ) : (
@@ -511,16 +511,16 @@ const Orders = () => {
                               <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                 <div className="flex justify-between items-center mb-2">
                                   <div className="text-sm text-gray-500">Subtotal:</div>
-                                  <div className="text-sm font-medium text-gray-900">${parseFloat(order.total || 0).toFixed(2)}</div>
+                                  <div className="text-sm font-medium text-gray-900">Rs {parseFloat(order.total || 0).toFixed(2)}</div>
                                 </div>
                                 <div className="flex justify-between items-center mb-2">
                                   <div className="text-sm text-gray-500">Shipping:</div>
-                                  <div className="text-sm font-medium text-gray-900">$0.00</div>
+                                  <div className="text-sm font-medium text-gray-900">Rs 0.00</div>
                                 </div>
                                 <div className="border-t border-gray-200 my-2 pt-2">
                                   <div className="flex justify-between items-center">
                                     <div className="text-base font-medium text-gray-800">Total:</div>
-                                    <div className="text-base font-bold text-blue-600">${parseFloat(order.total || 0).toFixed(2)}</div>
+                                    <div className="text-base font-bold text-blue-600">Rs {parseFloat(order.total || 0).toFixed(2)}</div>
                                   </div>
                                 </div>
                               </div>
