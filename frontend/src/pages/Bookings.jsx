@@ -530,7 +530,7 @@ const VaccinationBookings = () => {
                                               {vaccine.doseNumber}
                                             </span>
                                           </td>
-                                          <td className="px-4 py-3 text-sm text-gray-900 text-right">${parseFloat(vaccine.price || 0).toFixed(2)}</td>
+                                          <td className="px-4 py-3 text-sm text-gray-900 text-right">Rs {parseFloat(vaccine.price || 0).toFixed(2)}</td>
                                         </tr>
                                       ))
                                     ) : (
@@ -545,12 +545,12 @@ const VaccinationBookings = () => {
                               <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                 <div className="flex justify-between items-center mb-2">
                                   <div className="text-sm text-gray-500">Subtotal:</div>
-                                  <div className="text-sm font-medium text-gray-900">${parseFloat(booking.totalAmount || 0).toFixed(2)}</div>
+                                  <div className="text-sm font-medium text-gray-900">Rs {parseFloat(booking.totalAmount || 0).toFixed(2)}</div>
                                 </div>
                                 <div className="border-t border-gray-200 my-2 pt-2">
                                   <div className="flex justify-between items-center">
                                     <div className="text-base font-medium text-gray-800">Total:</div>
-                                    <div className="text-base font-bold text-blue-600">${parseFloat(booking.totalAmount || 0).toFixed(2)}</div>
+                                    <div className="text-base font-bold text-blue-600">Rs {parseFloat(booking.totalAmount || 0).toFixed(2)}</div>
                                   </div>
                                 </div>
                               </div>
