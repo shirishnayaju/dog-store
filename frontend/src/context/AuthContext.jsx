@@ -1,15 +1,28 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
 import axios from "axios";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import {jwtDecode} from "jwt-decode";
+import { useToast } from "./ToastContext"; // Import the toast context
 
 // Create AuthContext
 const AuthContext = createContext(null);
 
+// Custom hook - Declare inside the same file for consistency
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}
+
 // Create the provider component
-const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
-
+  // We can't use useToast here directly since this is outside of a component's render
+  // We'll use a different approach for the provider
+  
   // Initialize user from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -22,6 +35,20 @@ const AuthProvider = ({ children }) => {
       }
     }
     setIsInitialized(true);
+  }, []);
+
+  // Update user function - needed for profile updates
+  const updateUser = useCallback((userData) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+    return {
+      showToast: {
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully.",
+        type: "success",
+        duration: 3000
+      }
+    };
   }, []);
 
   // Login function - using useCallback to maintain reference stability
@@ -46,10 +73,13 @@ const AuthProvider = ({ children }) => {
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
 
-      alert("Login successful!");
-      
-      // Return the user data so the component can handle navigation
-      return userData;
+      // Instead of alert, we'll return an object with a showToast property
+      return { userData, showToast: {
+        title: "Login Successful", 
+        description: `Welcome back, ${userData.name}!`, 
+        type: "success",
+        duration: 3000
+      }};
     } catch (error) {
       console.error("Login Error:", error);
 
@@ -67,8 +97,16 @@ const AuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem("user");
-    alert("Logout successful!");
-    // We'll let the component handle navigation after logout
+    
+    // Return toast data instead of showing alert
+    return {
+      showToast: {
+        title: "Logout Successful",
+        description: "You have been logged out successfully.",
+        type: "info",
+        duration: 3000
+      }
+    };
   }, []);
 
   // Signup function
@@ -96,11 +134,15 @@ const AuthProvider = ({ children }) => {
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
 
-      alert("Signup successful!");
-      return userData;
+      // Return user data and toast info
+      return { userData, showToast: {
+        title: "Signup Successful",
+        description: `Welcome to Gharpaluwa, ${userData.name}!`,
+        type: "success",
+        duration: 3000
+      }};
     } catch (error) {
       console.error("Signup Error:", error);
-      alert(error.response?.data?.message || "Signup failed.");
       throw error;
     }
   }, []);
@@ -110,6 +152,49 @@ const AuthProvider = ({ children }) => {
     window.location.href = "http://localhost:3000/auth/google";
   }, []);
 
+  // Login with Google
+  const loginWithGoogle = useCallback(async (googleCredential) => {
+    try {
+      // Decode the JWT token to get user info
+      const decoded = jwtDecode(googleCredential);
+      console.log("Google login data:", decoded);
+      
+      // Check if user exists and log them in
+      const response = await axios.post("http://localhost:4001/user/login-with-google", {
+        email: decoded.email,
+        googleData: decoded
+      });
+      
+      const userData = response.data?.user;
+      if (!userData) {
+        throw new Error("Login failed. User data missing.");
+      }
+      
+      console.log("Google Login Success:", userData);
+      
+      // Save user data to state and local storage
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+      
+      // Return user data and toast info
+      return { userData, showToast: {
+        title: "Google Login Successful",
+        description: `Welcome back, ${userData.name}!`,
+        type: "success",
+        duration: 3000
+      }};
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      
+      // If user doesn't exist, we may want to redirect to signup
+      if (error.response?.status === 404) {
+        throw new Error("No account found for this Google user. Please sign up first.");
+      } else {
+        throw new Error("Login with Google failed. Please try again later.");
+      }
+    }
+  }, []);
+
   // Create a stable value object with useCallback
   const contextValue = {
     user,
@@ -117,26 +202,28 @@ const AuthProvider = ({ children }) => {
     login,
     logout,
     signup,
-    signupWithGoogle
+    signupWithGoogle,
+    loginWithGoogle,
+    updateUser // Add this to the context value
   };
 
   return (
-    <GoogleOAuthProvider clientId="520016725734-7mq3cl77tq37cm20tqss1j99q8kfrtoa.apps.googleusercontent.com">
+    <GoogleOAuthProvider 
+      clientId="520016725734-7mq3cl77tq37cm20tqss1j99q8kfrtoa.apps.googleusercontent.com"
+      onScriptLoadError={(error) => console.error("Google script load error:", error)}
+      onError={(error) => {
+        console.error("Google OAuth error:", error);
+        // Log detailed error information for debugging
+        if (error.type === "idpiframe_initialization_failed") {
+          console.log("Google initialization failed. Details:", error.details);
+          console.log("Current origin:", window.location.origin);
+          console.log("If you're seeing origin_mismatch errors, make sure this origin is registered in Google Cloud Console");
+        }
+      }}
+    >
       <AuthContext.Provider value={contextValue}>
         {children}
       </AuthContext.Provider>
     </GoogleOAuthProvider>
   );
-};
-
-// Custom hook - declared separately with const
-const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
-
-// Export both separately
-export { AuthProvider, useAuth };
+}
