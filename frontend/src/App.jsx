@@ -32,7 +32,7 @@ import ScheduleVaccination from "./pages/ScheduleVaccination";
 import SearchResults from "./pages/SearchResults";
 import Bookings from "./pages/Bookings";
 import ProductForm from './pages/ProductForm';
-import Payment from "./pages/payment";
+import Payment from "./pages/Payment"; // Correcting the capitalization
 import PaymentSuccess from "./pages/PaymentSuccess";
 import AddProducts from "./pages/AddProducts";
 
