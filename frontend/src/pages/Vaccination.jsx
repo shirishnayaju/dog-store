@@ -83,26 +83,6 @@ export default function Vaccination() {
       image: "/images/vet1.jpg",
       certification: "American Veterinary Medical Association",
       bio: "Dr. Johnson specializes in preventative care with expertise in vaccination protocols for dogs of all breeds and ages."
-    },
-    {
-      id: 2,
-      name: "Dr. Michael Chen",
-      title: "Veterinary Immunologist",
-      specialty: "Preventative Medicine",
-      experience: "12 years",
-      availability: "Tue-Sat, 10am-6pm",
-      certification: "Board Certified in Veterinary Preventive Medicine",
-      bio: "With a focus on immunology, Dr. Chen ensures your pet receives the most effective vaccination protocols tailored to their specific needs."
-    },
-    {
-      id: 3,
-      name: "Jessica Martinez, RVT",
-      title: "Registered Veterinary Technician",
-      specialty: "Vaccination Administration",
-      experience: "8 years",
-      availability: "Mon-Thu, 8am-4pm",
-      certification: "Certified Veterinary Technician",
-      bio: "Jessica is experienced in gentle handling techniques that make the vaccination process comfortable for anxious or sensitive dogs."
     }
   ];
 
@@ -228,9 +208,6 @@ export default function Vaccination() {
                         
                         <p className="mt-4 text-gray-600 text-sm">{giver.bio}</p>
                         
-                        <Button className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg py-3">
-                          Schedule Appointment
-                        </Button>
                       </div>
                     </motion.div>
                   ))}
@@ -363,7 +340,7 @@ export default function Vaccination() {
         )}
 
         {/* Enhanced Search and Category Section */}
-        <div className="bg-white p-8 rounded-2xl shadow-md mb-8">
+        <div className="bg-blue-200 p-8 rounded-2xl shadow-md mb-8">
           <div className="max-w-lg mx-auto mb-8">
                 <div className="relative z-10">
                        <motion.h1
@@ -375,7 +352,7 @@ export default function Vaccination() {
                          Our Vaccines
                        </motion.h1>
                        <motion.p
-                         className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8"
+                         className="text-lg md:text-xl text-black max-w-2xl mx-auto mb-8"
                          initial={{ opacity: 0 }}
                          animate={{ opacity: 1 }}
                          transition={{ duration: 0.8, delay: 0.3 }}

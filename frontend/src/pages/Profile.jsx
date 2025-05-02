@@ -215,7 +215,7 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-2 gap-4 w-full">
                     <Button 
                       variant="outline"
-                      className="border border-blue-200 text-blue-600 hover:bg-blue-300 hover:text-black flex items-center justify-center"
+                      className=" bg-blue-600 border border-blue-200 text-blue-600 hover:bg-blue-800  flex items-center justify-center"
                       onClick={() => navigate("/edit-profile")}
                     >
                       <Edit className="w-4 h-4 mr-2" />

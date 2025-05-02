@@ -32,6 +32,9 @@ export default function Checkout() {
   const { user } = useAuth();
   const [userEmail, setUserEmail] = useState(null);
   const [step, setStep] = useState(1); // For multi-step checkout
+  
+  // API base URL from environment
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4001";
 
   // Debug user object
   useEffect(() => {
@@ -165,7 +168,7 @@ export default function Checkout() {
       console.log('Order Data:', orderData);
 
       // Send the order data to the backend
-      const response = await axios.post('http://localhost:4001/api/orders', orderData);
+      const response = await axios.post(`${apiBaseUrl}/api/orders`, orderData);
 
       if (response.status === 200 || response.status === 201) {
         // Clear the cart

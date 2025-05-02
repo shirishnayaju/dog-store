@@ -11,7 +11,7 @@ import vaccinationRoutes from "./route/VaccinationBooking.route.js";
 import mailRoutes from "./route/mailRoutes.js";
 import emailRoutes from "./route/email.route.js";
 import paymentRoutes from "./route/payments.js";
-import dashboardRoutes from "./route/dashboard.route.js"; // New import
+import dashboardRoutes from "./route/dashboard.route.js";
 
 // Load environment variables
 dotenv.config();
@@ -20,12 +20,14 @@ const app = express();
 
 // Middleware setup
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || ['https://gharpaluwa.tech', 'https://www.gharpaluwa.tech'],
+  credentials: true
+}));
 
 // Server port & MongoDB URI
 const PORT = process.env.PORT || 4001;
 const URI = process.env.MongoDBURI;
-
 
 // MongoDB Connection
 mongoose
@@ -53,11 +55,11 @@ app.use('/api', vaccinationRoutes);
 app.use("/api", mailRoutes);
 app.use("/api", emailRoutes);
 app.use('/payments', paymentRoutes);
-app.use('/api/dashboard', dashboardRoutes); // New route added
+app.use('/api/dashboard', dashboardRoutes);
 
 // Default route
 app.get("/", (req, res) => {
-  res.send("Welcome to the API!");
+  res.send("Welcome to the Gharpaluwa API!");
 });
 
 // Error handling middleware
@@ -70,7 +72,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-});
+// Export for Vercel
+export default app;
+
+// Start the server if not in production (Vercel handles this in production)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+  });
+}

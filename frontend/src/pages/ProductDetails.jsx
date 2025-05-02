@@ -28,6 +28,11 @@ export default function ProductDetails() {
   const [activeTab, setActiveTab] = useState('description'); // New state for tabs
   const [isWishlist, setIsWishlist] = useState(false); // Wishlist state
   
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   // Category icons matching exactly what's in Products.js
   const categoryIcons = {
     'All': <FaHeart className="text-pink-500" />,

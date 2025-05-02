@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "./ui/button";
 import { useCart } from '../hooks/useCart'; 
 import { FaShoppingCart, FaStar } from 'react-icons/fa';
@@ -9,6 +9,7 @@ function ProductCard({ product, categoryIcons }) {
   const { addToCart } = useCart();
   const { addToast } = useToast();
   const [quantity, setQuantity] = useState(1); // Default quantity is 1
+  const navigate = useNavigate();
 
   const handleAddToCart = () => {
     addToCart({ ...product, quantity });
@@ -20,6 +21,12 @@ function ProductCard({ product, categoryIcons }) {
       duration: 3000,
       type: 'success'
     });
+  };
+
+  const handleViewDetails = () => {
+    // Navigate and ensure page scrolls to top
+    navigate(`/products/${product._id}`);
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -100,11 +107,13 @@ function ProductCard({ product, categoryIcons }) {
           </div>
           
           <div className="flex gap-2">
-            <Link to={`/products/${product._id}`} className="flex-grow">
-              <Button variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors">
-                View Details
-              </Button>
-            </Link>
+            <Button 
+              onClick={handleViewDetails}
+              variant="outline" 
+              className="flex-grow w-full border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
+            >
+              View Details
+            </Button>
             <Button 
               onClick={handleAddToCart} 
               className="bg-blue-600 hover:bg-blue-700 text-white p-2"

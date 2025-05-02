@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "../components/ui/button";
-import Dog5 from '../Image/Dog5.png';
+import Dog6 from "../Image/dog6.jpg";
 import { 
   ShieldCheck, 
   HeartHandshake, 
@@ -38,6 +38,25 @@ function Aboutus() {
   return (
 
     <div className="max-w-full mx-auto px-4 py-12 bg-gray-50">
+      {/* "We Are Gharpaluwa" Banner */}
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0, y: -20 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+        }}
+        className="text-center mb-8"
+      >
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800 mb-2">
+          We Are Gharpaluwa
+        </h1>
+        <div className="w-32 h-1 bg-gradient-to-r from-yellow-400 to-yellow-300 mx-auto rounded-full"></div>
+        <p className="text-xl text-gray-700 mt-4 max-w-3xl mx-auto">
+          Your trusted partner for all your pet care needs
+        </p>
+      </motion.div>
+      
       {/* Hero Section */}
       <motion.div 
         initial="hidden"
@@ -67,12 +86,19 @@ function Aboutus() {
             </div>
           </div>
           <div className="md:w-2/5 mt-8 md:mt-0 z-10">
-            <div className="relative">
-              <img 
-                src={Dog5} 
-                alt="Happy dog" 
-                className="relative rounded-lg shadow-lg w-full h-auto object-cover transform hover:scale-105 transition-transform duration-300" 
-              />
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-blue-500 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative">
+                <img 
+                  src={Dog6} 
+                  alt="Happy dog" 
+                  className="rounded-lg shadow-lg w-full h-auto object-cover transform hover:scale-105 transition-transform duration-300" 
+                  style={{ maxHeight: '450px', objectPosition: 'center' }}
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-900/70 to-transparent p-6">
+                  <p className="text-white text-lg font-medium">Your furry friend deserves the best!</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

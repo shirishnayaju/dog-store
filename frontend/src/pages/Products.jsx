@@ -15,6 +15,9 @@ export default function Products() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
+    
     // Fetch products
     axios.get('http://localhost:4001/products')
       .then(response => {

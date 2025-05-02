@@ -4,6 +4,7 @@ import CartProvider from './context/CartContext';
 import { ToastProvider } from './context/ToastContext'; // Import ToastProvider
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop"; // Import the ScrollToTop component
 import Home from "./pages/Home";
 import Products from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
@@ -38,6 +39,7 @@ import AddProducts from "./pages/AddProducts";
 function App() {
   return (
     <Router>
+      <ScrollToTop /> {/* Add ScrollToTop component here */}
       <AuthProvider>
         <CartProvider>
           <ToastProvider> {/* Add ToastProvider here */}
