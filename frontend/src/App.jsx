@@ -1,48 +1,51 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import CartProvider from './context/CartContext';
-import { ToastProvider } from './context/ToastContext'; // Import ToastProvider
+import { ToastProvider } from './context/ToastContext'; 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import ScrollToTop from "./components/ScrollToTop"; // Import the ScrollToTop component
-import Home from "./pages/Home";
-import Products from "./pages/Products";
-import ProductDetails from "./pages/ProductDetails";
-import Cart from "./pages/Cart";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Checkout from "./pages/Checkout";
-import Admin from "./pages/Admin";
-import Dashboard from "./pages/Dashboard";
-import AdminProducts from "./pages/AdminProducts";
-import Orders from "./pages/Orders";
-import Customers from "./pages/Customers";
-import Vaccination from "./pages/Vaccination";
-import VaccinationDetails from "./pages/VaccinationDetails";
-import Aboutus from "./pages/Aboutus";
-import ProfilePage from "./pages/Profile";
-import ForgotPassword from "./pages/Forgotpassword";
-import ResetPassword from "./pages/ResetPassword";
-import VerifyOtp from "./pages/VerifyOtp";
-import VerificationPending from "./pages/VerificationPending";
-import EditProfile from "./pages/EditProfile";
-import BookingConfirm from "./pages/BookingConfirm";
-import MyBookings from "./pages/MyBookings";
-import ScheduleVaccination from "./pages/ScheduleVaccination";
-import SearchResults from "./pages/SearchResults";
-import Bookings from "./pages/Bookings";
-import ProductForm from './pages/ProductForm';
-import Payment from "./pages/Payment"; // Correcting the capitalization
-import PaymentSuccess from "./pages/PaymentSuccess";
-import AddProducts from "./pages/AddProducts";
+import ScrollToTop from "./components/ScrollToTop";
+// Import all pages from the centralized index file
+import {
+  Home,
+  Products,
+  ProductDetails,
+  Cart,
+  Login,
+  Signup,
+  Checkout,
+  Admin,
+  Dashboard,
+  AdminProducts,
+  Orders,
+  Customers,
+  Vaccination,
+  VaccinationDetails,
+  Aboutus,
+  ProfilePage,
+  ForgotPassword,
+  ResetPassword,
+  VerifyOtp,
+  VerificationPending,
+  EditProfile,
+  BookingConfirm,
+  MyBookings,
+  ScheduleVaccination,
+  SearchResults,
+  Bookings,
+  ProductForm,
+  Payment,
+  PaymentSuccess,
+  AddProducts
+} from './pages';
 
 function App() {
   return (
     <Router>
-      <ScrollToTop /> {/* Add ScrollToTop component here */}
+      <ScrollToTop />
       <AuthProvider>
         <CartProvider>
-          <ToastProvider> {/* Add ToastProvider here */}
+          <ToastProvider>
             <Routes>
               {/* Admin routes without Header and Footer */}
               <Route path="/admin" element={<Admin />}>
