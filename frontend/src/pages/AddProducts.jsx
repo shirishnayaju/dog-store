@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft, AlertCircle, Loader, Image as ImageIcon, CheckCircle } from 'lucide-react';
+import { Save, ArrowLeft, AlertCircle, Loader, Image as ImageIcon, CheckCircle, Package, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ProductForm = ({ isEditing = false }) => {
@@ -151,19 +151,15 @@ const ProductForm = ({ isEditing = false }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader size={36} className="text-blue-500 animate-spin" />
+      <div className="flex items-center justify-center p-8 h-64">
+        <div className="animate-spin w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
+        <p className="ml-3 font-medium text-gray-600">Loading product data...</p>
       </div>
     );
   }
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
-    >
+    <div className="p-6">
       {/* Success Popup */}
       <AnimatePresence>
         {showPopup && (
@@ -173,20 +169,20 @@ const ProductForm = ({ isEditing = false }) => {
             exit={{ opacity: 0, scale: 0.8 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
           >
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-sm w-full">
+            <div className="bg-white rounded-lg shadow-xl p-6 m-4 max-w-sm w-full">
               <div className="flex flex-col items-center text-center">
                 <CheckCircle className="text-green-500 w-16 h-16 mb-4" />
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
                   Success!
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <p className="text-gray-600 mb-6">
                   Product has been {isEditing ? 'updated' : 'added'} successfully.
                 </p>
                 <div className="flex gap-4">
                   {!isEditing && (
                     <button
                       onClick={() => setShowPopup(false)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       Add Another Product
                     </button>
@@ -196,7 +192,7 @@ const ProductForm = ({ isEditing = false }) => {
                       setShowPopup(false);
                       navigate('/admin/products');
                     }}
-                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
+                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
                   >
                     Go to Products
                   </button>
@@ -207,14 +203,15 @@ const ProductForm = ({ isEditing = false }) => {
         )}
       </AnimatePresence>
 
-      {/* Header and navigation */}
-      <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+      {/* Title and actions row */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0 flex items-center">
+          <Package className="h-6 w-6 mr-3 text-blue-600" />
           {isEditing ? 'Edit Product' : 'Add New Product'}
         </h2>
         <button
           onClick={() => navigate('/admin/products')}
-          className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
         >
           <ArrowLeft size={18} />
           <span>Back to Products</span>
@@ -222,213 +219,237 @@ const ProductForm = ({ isEditing = false }) => {
       </div>
 
       {/* Error/Success messages */}
-      {error && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg flex items-center"
-        >
-          <AlertCircle className="inline mr-2 flex-shrink-0" />
-          <span className="flex-grow">{error}</span>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center"
+          >
+            <AlertCircle className="inline mr-2 flex-shrink-0" />
+            <span className="flex-grow">{error}</span>
+            <button onClick={() => setError(null)} className="text-red-700 hover:text-red-900">
+              &times;
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
-      {success && !showPopup && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 rounded-lg flex items-center"
-        >
-          <CheckCircle className="inline mr-2 flex-shrink-0" />
-          <span className="flex-grow">Product {isEditing ? 'updated' : 'created'} successfully!</span>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {success && !showPopup && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center"
+          >
+            <CheckCircle className="inline mr-2 flex-shrink-0" />
+            <span className="flex-grow">Product {isEditing ? 'updated' : 'created'} successfully!</span>
+            <button onClick={() => setSuccess(false)} className="text-green-700 hover:text-green-900">
+              &times;
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Image URL & Preview */}
-          <div className="col-span-1 md:col-span-2 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">
-              <div className="flex items-center gap-2 mb-2">
-                <ImageIcon size={18} className="text-blue-500" />
-                <span>Product Image URL*</span>
-              </div>
-            </label>
-            <input
-              type="url"
-              name="imageUrl"
-              value={formData.imageUrl}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder="https://example.com/image.jpg"
-              required
-            />
-            {formData.imageUrl && (
-              <div className="mt-4 flex items-center gap-4">
-                <div className="w-32 h-32 border rounded-lg overflow-hidden bg-white dark:bg-gray-800">
-                  <img
-                    src={formData.imageUrl}
-                    alt="Preview"
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      e.target.src = 'https://placehold.co/150x150?text=Invalid+URL';
-                    }}
-                  />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white rounded-lg shadow-sm border overflow-hidden"
+      >
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Image URL & Preview */}
+            <div className="col-span-1 md:col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <ImageIcon size={18} className="text-blue-600" />
+                  <span>Product Image URL*</span>
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Image preview will appear here
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Product Name */}
-          <div className="col-span-1 md:col-span-2">
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Product Name*</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
-
-          {/* Price and Category in same row */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Price*</label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 flex items-center px-3 pointer-events-none bg-gray-100 dark:bg-gray-600 border-r border-gray-300 dark:border-gray-500 rounded-l-lg">
-                <span className="text-gray-500 dark:text-gray-300 font-medium">Rs</span>
-              </div>
+              </label>
               <input
-                type="number"
-                name="price"
-                value={formData.price}
+                type="url"
+                name="imageUrl"
+                value={formData.imageUrl}
                 onChange={handleInputChange}
-                step="0.01"
-                min="0"
-                className="w-full pl-16 p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-blue-300 dark:hover:border-blue-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="https://example.com/image.jpg"
                 required
               />
-              <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-              </span>
+              {formData.imageUrl && (
+                <div className="mt-4 flex items-center gap-4">
+                  <div className="w-32 h-32 border rounded-lg overflow-hidden bg-white shadow-sm">
+                    <img
+                      src={formData.imageUrl}
+                      alt="Preview"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.target.src = 'https://placehold.co/150x150?text=Invalid+URL';
+                      }}
+                    />
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    <p className="font-medium mb-1">Image Preview</p>
+                    <p className="text-xs opacity-75">Make sure your image URL is valid and accessible</p>
+                  </div>
+                </div>
+              )}
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter product price in Rupees</p>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Category*</label>
-            <div className="relative">
-              <select
-                name="category"
-                value={formData.category}
+            {/* Product Name */}
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700">Product Name*</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
                 onChange={handleInputChange}
-                className="w-full p-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-blue-300 dark:hover:border-blue-500 appearance-none"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter product name"
                 required
-              >
-                <option value="">Select a category</option>
-                {categoryOptions.map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="w-5 h-5 text-gray-500 dark:text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
+              />
+            </div>
+
+            {/* Price and Category in same row */}
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-700">Price*</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 flex items-center px-3 pointer-events-none bg-gray-100 border-r border-gray-300 rounded-l-lg">
+                  <span className="text-gray-500 font-medium">Rs</span>
+                </div>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  step="0.01"
+                  min="0"
+                  className="w-full pl-16 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-blue-300"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Enter product price in Rupees</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-700">Category*</label>
+              <div className="relative">
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-blue-300 appearance-none"
+                  required
+                >
+                  <option value="">Select a category</option>
+                  {categoryOptions.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Choose the most relevant category for this product</p>
+            </div>
+
+            {/* Lists */}
+            <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Ingredients*</label>
+                <textarea
+                  name="ingredients"
+                  value={formData.ingredients}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="Enter ingredients, separated by commas"
+                  rows="3"
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500">Example: Chicken, Rice, Vegetables</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Recommended For*</label>
+                <textarea
+                  name="recommendedFor"
+                  value={formData.recommendedFor}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="Enter recommendations, separated by commas"
+                  rows="3"
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500">Example: Adult dogs, Puppies, Small breeds</p>
               </div>
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Choose the most relevant category for this product</p>
-          </div>
 
-          {/* Lists */}
-          <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Ingredients*</label>
+            {/* Details and Description */}
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700">Product Details*</label>
               <textarea
-                name="ingredients"
-                value={formData.ingredients}
+                name="details"
+                value={formData.details}
                 onChange={handleInputChange}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="Enter ingredients, separated by commas"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter product details, separated by commas"
                 rows="3"
                 required
               />
+              <p className="mt-1 text-xs text-gray-500">Example: Grain-free, High protein, Organic</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Recommended For*</label>
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700">Description*</label>
               <textarea
-                name="recommendedFor"
-                value={formData.recommendedFor}
+                name="description"
+                value={formData.description}
                 onChange={handleInputChange}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="Enter recommendations, separated by commas"
-                rows="3"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter detailed product description"
+                rows="4"
                 required
               />
+              <p className="mt-1 text-xs text-gray-500">Provide a comprehensive description of the product including benefits and features</p>
             </div>
           </div>
 
-          {/* Details and Description */}
-          <div className="col-span-1 md:col-span-2">
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Product Details*</label>
-            <textarea
-              name="details"
-              value={formData.details}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder="Enter product details, separated by commas"
-              rows="3"
-              required
-            />
+          {/* Form Actions */}
+          <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={() => navigate('/admin/products')}
+              className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitLoading}
+              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 shadow-sm"
+            >
+              {submitLoading ? (
+                <>
+                  <Loader className="animate-spin h-5 w-5" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="h-5 w-5" />
+                  <span>{isEditing ? 'Update Product' : 'Create Product'}</span>
+                </>
+              )}
+            </button>
           </div>
-
-          <div className="col-span-1 md:col-span-2">
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Description*</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder="Enter detailed product description"
-              rows="4"
-              required
-            />
-          </div>
-        </div>
-
-        {/* Form Actions */}
-        <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <button
-            type="button"
-            onClick={() => navigate('/admin/products')}
-            className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={submitLoading}
-            className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-          >
-            {submitLoading ? (
-              <>
-                <Loader className="animate-spin h-5 w-5" />
-                <span>Processing...</span>
-              </>
-            ) : (
-              <>
-                <Save className="h-5 w-5" />
-                <span>{isEditing ? 'Update Product' : 'Create Product'}</span>
-              </>
-            )}
-          </button>
-        </div>
-      </form>
-    </motion.div>
+        </form>
+      </motion.div>
+    </div>
   );
 };
 

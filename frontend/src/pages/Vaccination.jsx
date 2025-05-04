@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "../components/ui/button";
-import { Shield, Calendar, Syringe, Search, ArrowUpCircle, Info, AlertCircle, User, Stethoscope, Clock } from 'lucide-react';
+import { Shield, Calendar, Syringe, Search, ArrowUpCircle, Info, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import { FaSyringe, FaShieldAlt, FaCalendarAlt } from 'react-icons/fa';
 import VaccinationCard from '../components/vaccinationCard'; 
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 export default function Vaccination() {
   const [vaccinations, setVaccinations] = useState([]);
@@ -14,7 +15,7 @@ export default function Vaccination() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showInfoSection, setShowInfoSection] = useState(true);
-  const [showVaccinationGivers, setShowVaccinationGivers] = useState(false);
+  const searchSectionRef = useRef(null);
 
   useEffect(() => {
     // Fetch vaccination data
@@ -71,21 +72,6 @@ export default function Vaccination() {
       (vaccine.description && vaccine.description.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-  // Sample vaccination givers data
-  const vaccinationGivers = [
-    {
-      id: 1,
-      name: "Dr. Sarah Johnson",
-      title: "Senior Veterinarian",
-      specialty: "Canine Immunology",
-      experience: "15+ years",
-      availability: "Mon-Fri, 9am-5pm",
-      image: "/images/vet1.jpg",
-      certification: "American Veterinary Medical Association",
-      bio: "Dr. Johnson specializes in preventative care with expertise in vaccination protocols for dogs of all breeds and ages."
-    }
-  ];
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 to-white">
@@ -120,143 +106,152 @@ export default function Vaccination() {
   return (
     <div className="bg-gradient-to-b from-emerald-50 via-teal-50 to-white min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        {/* Modern Hero Section */}
-        <motion.div 
-          className="bg-white rounded-2xl shadow-lg overflow-hidden mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+        {/* Enhanced Hero Section with more beautiful gradient background */}
+        <motion.div
+          className="bg-gradient-to-r from-indigo-600 via-blue-600 to-blue-700 text-white rounded-2xl shadow-2xl overflow-hidden mb-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
         >
-          <div className="bg-gradient-to-r from-emerald-600 to-indigo-600 text-white py-12 px-8 md:px-12 relative overflow-hidden">
-            {/* Abstract Background Elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-16 -mb-16"></div>
-            
-            <div className="max-w-4xl mx-auto relative z-10">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Dog Vaccination Services</h1>
-              <p className="text-lg md:text-xl opacity-90 max-w-2xl">Protect your furry companions with our comprehensive vaccination programs, expertly delivered by our veterinary professionals</p>
-              
-              <div className="flex flex-wrap gap-4 mt-8">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="p-8 md:p-12 lg:p-16 flex-1 relative z-10">
+              <motion.h1 
+                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                Pet <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-yellow-400">Vaccination</span> Services
+              </motion.h1>
+              <motion.p 
+                className="text-xl md:text-2xl mb-8 text-indigo-100 max-w-2xl"
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                Protect your furry companions with our comprehensive vaccination programs, expertly delivered by our veterinary professionals
+              </motion.p>
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+              >
                 <Button 
-                  onClick={() => setShowVaccinationGivers(!showVaccinationGivers)}
-                  className="px-6 py-3 rounded-full flex items-center gap-2 bg-emerald-800 text-emerald-700 hover:bg-emerald-400 transition-all shadow-md"
+                  onClick={() => {
+                    searchSectionRef.current.scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }}
+                  className="bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-blue-900 font-semibold flex items-center gap-3 px-8 py-6 text-lg rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
                 >
-                  <User className="w-5 h-5" />
-                  <span>{showVaccinationGivers ? 'Hide Vaccination Giver Info' : 'Show Vaccination Giver Info'}</span>
+                  Schedule Now <Calendar className="w-6 h-6" />
                 </Button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-        
-        {/* Vaccination Givers Section */}
-        <AnimatePresence>
-          {showVaccinationGivers && (
-            <motion.div
-              className="bg-white rounded-2xl shadow-md overflow-hidden mb-12"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="bg-emerald-50 px-8 py-5 border-b border-emerald-100">
-                <h2 className="text-2xl font-semibold text-emerald-700 flex items-center">
-                  <User className="mr-3 w-6 h-6" />
-                  Our Veterinary Team
-                </h2>
-              </div>
+              </motion.div>
               
-              <div className="p-8">
-                <p className="text-gray-700 mb-8 text-lg">
-                  Our experienced team of veterinarians and technicians specialize in pet vaccinations. 
-                  We're committed to providing safe, effective vaccination services with minimal stress for your beloved companions.
-                </p>
-
-                <div className="grid md:grid-cols-3 gap-8">
-                  {vaccinationGivers.map((giver) => (
-                    <motion.div
-                      key={giver.id}
-                      className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all"
-                      whileHover={{ y: -5 }}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <div className="h-48 bg-gradient-to-br from-emerald-500 to-teal-600 relative">
-                        <div className="absolute inset-0 flex items-center justify-center bg-emerald-100 text-emerald-500">
-                          <User size={64} />
+              {/* Decorative elements with enhanced glowing effects */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 blur-3xl rounded-full -mr-16 -mt-16"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-300/20 blur-2xl rounded-full -ml-16 -mb-16"></div>
+              <div className="absolute bottom-10 right-10 w-32 h-32 bg-amber-300/30 blur-xl rounded-full"></div>
+            </div>
+            <motion.div 
+              className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden p-6 md:p-0"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="relative h-full">
+                {/* Enhanced gradient background */}
+                <div className="bg-gradient-to-br from-amber-300 via-amber-400 to-yellow-400 absolute inset-0 rounded-xl"></div>
+                
+                {/* Improved glass-morphism effect */}
+                <div className="bg-white/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/50 h-full transform transition-all duration-300 hover:shadow-2xl hover:border-white/60">
+                  <h3 className="text-blue-900/90 text-2xl font-bold mb-4 text-center drop-shadow-md">Our Vaccination Services</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4 h-full">
+                    <div className="flex flex-col justify-between gap-4">
+                      {/* Enhanced Core Vaccines card */}
+                      <div className="bg-gradient-to-br from-white/40 to-white/20 rounded-xl p-4 backdrop-blur-sm shadow-sm transition-all duration-300 hover:bg-white/40 hover:-translate-y-1 group">
+                        <div className="bg-yellow-400/30 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3 group-hover:bg-yellow-400/40 transition-all duration-300 shadow-inner">
+                          <FaShieldAlt className="w-8 h-8 text-yellow-700 group-hover:text-white transition-colors duration-300" />
                         </div>
+                        <h3 className="text-xl font-semibold text-center text-blue-900">Core Vaccines</h3>
+                        <p className="text-sm text-blue-900/80 text-center">Essential protection for all dogs</p>
                       </div>
-                      <div className="p-6">
-                        <h3 className="font-bold text-xl text-gray-800">{giver.name}</h3>
-                        <p className="text-emerald-600 font-medium text-sm mb-4">{giver.title}</p>
-                        
-                        <div className="space-y-3 text-sm text-gray-600 mt-4">
-                          <div className="flex items-start">
-                            <Stethoscope className="w-4 h-4 mr-2 mt-0.5 text-emerald-500 flex-shrink-0" />
-                            <span><strong className="font-medium">Specialty:</strong> {giver.specialty}</span>
-                          </div>
-                          <div className="flex items-start">
-                            <Clock className="w-4 h-4 mr-2 mt-0.5 text-emerald-500 flex-shrink-0" />
-                            <span><strong className="font-medium">Available:</strong> {giver.availability}</span>
-                          </div>
-                          <div className="flex items-start">
-                            <Shield className="w-4 h-4 mr-2 mt-0.5 text-emerald-500 flex-shrink-0" />
-                            <span><strong className="font-medium">Experience:</strong> {giver.experience}</span>
-                          </div>
+                      
+                      {/* Enhanced Easy Booking card */}
+                      <div className="bg-gradient-to-br from-white/40 to-white/20 rounded-xl p-4 backdrop-blur-sm shadow-sm transition-all duration-300 hover:bg-white/40 hover:-translate-y-1 group">
+                        <div className="bg-indigo-400/30 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-400/40 transition-all duration-300 shadow-inner">
+                          <FaCalendarAlt className="w-8 h-8 text-indigo-700 group-hover:text-white transition-colors duration-300" />
                         </div>
-                        
-                        <p className="mt-4 text-gray-600 text-sm">{giver.bio}</p>
-                        
+                        <h3 className="text-xl font-semibold text-center text-blue-900">Easy Booking</h3>
+                        <p className="text-sm text-blue-900/80 text-center">Simple online scheduling</p>
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
-
-                <div className="mt-8 p-5 bg-indigo-50 border-l-4 border-indigo-400 rounded-lg">
-                  <div className="flex items-start">
-                    <Info className="w-5 h-5 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <p className="text-indigo-800">
-                      <strong className="font-medium">Pro Tip:</strong> Our vaccination providers work closely with your regular veterinarian to ensure your dog receives the most appropriate vaccines based on their lifestyle, age, and health status.
-                    </p>
+                    </div>
+                    
+                    <div className="flex flex-col justify-between gap-4">
+                      {/* Enhanced Non-Core card */}
+                      <div className="bg-gradient-to-br from-white/40 to-white/20 rounded-xl p-4 backdrop-blur-sm shadow-sm transition-all duration-300 hover:bg-white/40 hover:-translate-y-1 group">
+                        <div className="bg-purple-400/30 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-400/40 transition-all duration-300 shadow-inner">
+                          <FaSyringe className="w-8 h-8 text-purple-700 group-hover:text-white transition-colors duration-300" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-center text-blue-900">Non-Core</h3>
+                        <p className="text-sm text-blue-900/80 text-center">Lifestyle-based protection</p>
+                      </div>
+                      
+                      {/* Enhanced Expert Care card */}
+                      <div className="bg-gradient-to-br from-white/40 to-white/20 rounded-xl p-4 backdrop-blur-sm shadow-sm transition-all duration-300 hover:bg-white/40 hover:-translate-y-1 group">
+                        <div className="bg-emerald-400/30 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3 group-hover:bg-emerald-400/40 transition-all duration-300 shadow-inner">
+                          <Shield className="w-8 h-8 text-emerald-700 group-hover:text-white transition-colors duration-300" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-center text-blue-900">Expert Care</h3>
+                        <p className="text-sm text-blue-900/80 text-center">Professional vet services</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-
+          </div>
+        </motion.div>
+        
         {/* Vaccination Information Section */}
         <AnimatePresence>
           {showInfoSection && (
             <motion.div
-              className="bg-white rounded-2xl shadow-md overflow-hidden mb-12"
-              initial={{ opacity: 1, height: 'auto' }}
+              className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-xl overflow-hidden mb-12 border border-blue-100"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="flex justify-between items-center bg-blue-600 px-6 py-4 border-b border-indigo-100">
-                <h2 className="text-2xl font-semibold text-white flex items-center">
-                  <Info className="mr-2 w-6 h-6" />
+              <div className="flex justify-between items-center bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 border-b border-blue-200">
+                <h2 className="text-2xl font-bold text-white flex items-center">
+                  <Info className="mr-3 w-7 h-7" />
                   Essential Vaccination Information
                 </h2>
                 <Button 
                   variant="ghost" 
                   onClick={() => setShowInfoSection(false)}
-                  className=" hover:text-blue-600 hover:bg-white rounded-full w-20 h-10 p-0 flex items-center justify-center"
+                  className="bg-white/20 backdrop-blur-sm hover:bg-white hover:text-blue-600 rounded-full w-24 h-10 flex items-center justify-center transition-all duration-300 text-white"
                 >
-                  Hide
+                  <span>Hide</span>
                 </Button>
               </div>
               
-              <div className="p-8">
-                <p className="text-gray-700 mb-8 text-lg">
+              <div className="p-8 md:p-10">
+                <motion.p 
+                  className="text-gray-700 mb-8 text-lg leading-relaxed max-w-4xl mx-auto text-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
                   Keeping your dog up-to-date on vaccinations is crucial for their
-                  health and well-being. Our comprehensive vaccination program follows the latest veterinary guidelines.
-                </p>
+                  health and well-being. Our comprehensive vaccination program follows the latest veterinary guidelines to ensure optimal protection.
+                </motion.p>
 
                 <motion.div
-                  className="grid md:grid-cols-3 gap-8 text-left"
+                  className="grid md:grid-cols-3 gap-6 lg:gap-8 text-left"
                   initial="hidden"
                   animate="visible"
                   variants={{
@@ -265,65 +260,99 @@ export default function Vaccination() {
                   }}
                 >
                   <InfoCard
-                    icon={<Shield className="w-10 h-10 text-indigo-500 mb-2" />}
+                    icon={<Shield className="w-12 h-12 text-indigo-500" />}
                     title="Core Vaccines"
                     content={
-                      <ul className="list-disc list-inside text-gray-600 space-y-2">
-                        <li>Rabies (required by law)</li>
-                        <li>Distemper</li>
-                        <li>Parvovirus</li>
-                        <li>Adenovirus (Canine Hepatitis)</li>
+                      <ul className="list-disc list-outside ml-5 text-gray-600 space-y-3">
+                        <li className="transition-all duration-200 hover:text-indigo-700"><span className="font-medium">Rabies:</span> Required by law and protects against fatal viral disease</li>
+                        <li className="transition-all duration-200 hover:text-indigo-700"><span className="font-medium">Distemper:</span> Prevents serious viral illness affecting multiple body systems</li>
+                        <li className="transition-all duration-200 hover:text-indigo-700"><span className="font-medium">Parvovirus:</span> Guards against highly contagious intestinal disease</li>
+                        <li className="transition-all duration-200 hover:text-indigo-700"><span className="font-medium">Adenovirus:</span> Protects against canine hepatitis</li>
                       </ul>
                     }
                     titleClass="text-indigo-600"
                   />
                   <InfoCard
-                    icon={<Calendar className="w-10 h-10 text-emerald-500 mb-2" />}
+                    icon={<Calendar className="w-12 h-12 text-emerald-500" />}
                     title="Vaccination Schedule"
                     content={
-                      <div className="text-gray-600 space-y-2">
-                        <p>
-                          <span className="font-medium">Puppies:</span> Start at <span className="font-medium">6-8 weeks</span>, with
-                          boosters every <span className="font-medium">3-4 weeks</span> until{" "}
-                          <span className="font-medium">16 weeks old</span>.
-                        </p>
-                        <p>
-                          <span className="font-medium">Adults:</span> Need{" "}
-                          <span className="font-medium">annual or triennial boosters</span> depending on the vaccine type and local requirements.
-                        </p>
+                      <div className="text-gray-600 space-y-4">
+                        <div className="bg-emerald-50 p-4 rounded-lg border-l-4 border-emerald-400">
+                          <h4 className="font-semibold text-emerald-700 mb-2 flex items-center">
+                            <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
+                            Puppies
+                          </h4>
+                          <p>
+                            Start at <span className="font-medium">6-8 weeks</span>, with
+                            boosters every <span className="font-medium">3-4 weeks</span> until{" "}
+                            <span className="font-medium">16 weeks old</span>.
+                          </p>
+                        </div>
+                        <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                          <h4 className="font-semibold text-blue-700 mb-2 flex items-center">
+                            <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                            Adult Dogs
+                          </h4>
+                          <p>
+                            Need{" "}
+                            <span className="font-medium">annual or triennial boosters</span> depending on the vaccine type and local requirements.
+                          </p>
+                        </div>
                       </div>
                     }
                     titleClass="text-emerald-600"
                   />
                   <InfoCard
-                    icon={<Syringe className="w-10 h-10 text-violet-500 mb-2" />}
+                    icon={<Syringe className="w-12 h-12 text-violet-500" />}
                     title="Additional Vaccines"
                     content={
                       <>
-                        <p className="text-gray-600">
-                          Depending on lifestyle & location, your vet may recommend:
+                        <p className="text-gray-600 mb-4">
+                          Based on your pet's lifestyle, environment & risk factors, additional vaccines may be recommended:
                         </p>
-                        <ul className="list-disc list-inside text-gray-600 space-y-2 mt-3">
-                          <li>Bordetella (Kennel Cough)</li>
-                          <li>Leptospirosis</li>
-                          <li>Lyme Disease</li>
-                          <li>Canine Influenza</li>
-                        </ul>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-violet-50 p-3 rounded-lg flex items-center">
+                            <div className="h-2 w-2 rounded-full bg-violet-400 mr-2"></div>
+                            <span className="text-violet-700 font-medium">Bordetella</span>
+                          </div>
+                          <div className="bg-violet-50 p-3 rounded-lg flex items-center">
+                            <div className="h-2 w-2 rounded-full bg-violet-400 mr-2"></div>
+                            <span className="text-violet-700 font-medium">Leptospirosis</span>
+                          </div>
+                          <div className="bg-violet-50 p-3 rounded-lg flex items-center">
+                            <div className="h-2 w-2 rounded-full bg-violet-400 mr-2"></div>
+                            <span className="text-violet-700 font-medium">Lyme Disease</span>
+                          </div>
+                          <div className="bg-violet-50 p-3 rounded-lg flex items-center">
+                            <div className="h-2 w-2 rounded-full bg-violet-400 mr-2"></div>
+                            <span className="text-violet-700 font-medium">Canine Influenza</span>
+                          </div>
+                        </div>
                       </>
                     }
                     titleClass="text-violet-600"
                   />
                 </motion.div>
 
-                <div className="mt-8 p-5 bg-amber-50 border-l-4 border-amber-400 rounded-lg">
+                <motion.div 
+                  className="mt-10 p-6 bg-amber-50 border border-amber-200 rounded-2xl shadow-sm"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
                   <div className="flex items-start">
-                    <AlertCircle className="w-5 h-5 text-amber-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <p className="text-amber-800">
-                      <strong className="font-medium">Important Note:</strong> Always consult with your veterinarian to determine the best
-                      vaccination plan for your dog based on age, health status, and lifestyle factors.
-                    </p>
+                    <div className="bg-amber-100 p-3 rounded-full mr-4">
+                      <AlertCircle className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-amber-800 text-lg mb-2">Important Reminder</h4>
+                      <p className="text-amber-700">
+                        Always consult with your veterinarian to determine the best
+                        vaccination plan for your dog based on age, health status, and lifestyle factors. Individual needs may vary.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           )}
@@ -332,7 +361,7 @@ export default function Vaccination() {
         {!showInfoSection && (
           <Button 
             onClick={() => setShowInfoSection(true)}
-            className="mb-8 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 flex items-center gap-2 px-6 py-3 rounded-lg shadow-sm"
+            className="mb-8 bg-blue-500 text-indigo-600 hover:bg-blue-700 flex items-center gap-2 px-6 py-3 rounded-lg shadow-sm"
           >
             <Info className="w-5 h-5" />
             Show Vaccination Information
@@ -340,7 +369,7 @@ export default function Vaccination() {
         )}
 
         {/* Enhanced Search and Category Section */}
-        <div className="bg-blue-200 p-8 rounded-2xl shadow-md mb-8">
+        <div className="bg-blue-200 p-8 rounded-2xl shadow-md mb-8 text-center" ref={searchSectionRef}>
           <div className="max-w-lg mx-auto mb-8">
                 <div className="relative z-10">
                        <motion.h1

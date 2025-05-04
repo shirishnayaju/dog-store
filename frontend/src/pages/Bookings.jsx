@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Eye, FileText, Calendar, User, Package, CreditCard, 
   ChevronDown, ChevronUp, Mail, RefreshCw, Filter, 
   CheckCircle, XCircle, Clock, Search, Trash, Download, ArrowDownCircle,
-  Syringe, AlertTriangle, PawPrint, Heart, Hash
+  Syringe, AlertTriangle, PawPrint, Heart, Hash, TrendingUp, TrendingDown
 } from 'lucide-react';
 
 const VaccinationBookings = () => {
@@ -162,9 +163,9 @@ const VaccinationBookings = () => {
 
   if (loading && !isRefreshing) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-64 p-6">
         <div className="text-center">
-          <RefreshCw className="h-10 w-10 animate-spin mx-auto text-blue-500 mb-4" />
+          <div className="animate-spin w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-lg text-gray-600">Loading vaccination bookings...</p>
         </div>
       </div>
@@ -172,92 +173,186 @@ const VaccinationBookings = () => {
   }
 
   return (
-    <div className="p-6 rounded-xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white flex items-center mb-4">
-          <Syringe className="h-6 w-6 mr-2 text-blue-600" />
+    <div className="p-6">
+      {/* Title and actions row */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0 flex items-center">
+          <Syringe className="h-6 w-6 mr-3 text-blue-600" />
           Vaccination Bookings
           {isRefreshing && <RefreshCw className="ml-2 h-4 w-4 animate-spin text-blue-500" />}
-        </h1>
-        <p className="text-white">Manage and track all vaccination appointments in one place</p>
+        </h2>
+        <div className="flex space-x-3">
+          <button 
+            onClick={fetchBookings}
+            disabled={isRefreshing}
+            className="flex items-center px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+            title="Refresh bookings"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-        <div className="bg-white dark:bg-blue-700 shadow rounded-lg p-4 border-l-4 border-blue-500">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm text-white mb-1">Total Bookings</p>
-              <p className="text-2xl font-bold text-white">{bookingStats.total}</p>
+        <motion.div 
+          whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-white p-6 rounded-xl border shadow-sm relative overflow-hidden"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 rounded-full bg-blue-600 text-white">
+              <Syringe className="h-6 w-6" />
             </div>
-            <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Syringe className="h-6 w-6 text-blue-600" />
+            <div className="flex items-center text-xs font-medium text-green-500">
+              <TrendingUp className="h-3 w-3" />
+              <span className="ml-1">+8.1%</span>
             </div>
           </div>
-        </div>
+          
+          <h2 className="text-lg font-medium text-gray-700 mb-1">Total Bookings</h2>
+          <p className="text-3xl font-bold text-gray-900">{bookingStats.total}</p>
+          
+          <div className="absolute -right-6 -bottom-10 opacity-10">
+            <Syringe className="h-24 w-24" />
+          </div>
+        </motion.div>
         
-        <div className="bg-white dark:bg-yellow-700 shadow rounded-lg p-4 border-l-4 border-yellow-500">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm text-white mb-1">Scheduled</p>
-              <p className="text-2xl font-bold text-white">{bookingStats.scheduled}</p>
+        <motion.div 
+          whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="bg-white p-6 rounded-xl border shadow-sm relative overflow-hidden"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 rounded-full bg-yellow-500 text-white">
+              <Clock className="h-6 w-6" />
             </div>
-            <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <Clock className="h-6 w-6 text-yellow-600" />
+            <div className="flex items-center text-xs font-medium text-yellow-500">
+              <Clock className="h-3 w-3" />
+              <span className="ml-1">Pending</span>
             </div>
           </div>
-        </div>
+          
+          <h2 className="text-lg font-medium text-gray-700 mb-1">Scheduled</h2>
+          <p className="text-3xl font-bold text-gray-900">{bookingStats.scheduled}</p>
+          
+          <div className="absolute -right-6 -bottom-10 opacity-10">
+            <Clock className="h-24 w-24" />
+          </div>
+        </motion.div>
         
-        <div className="bg-white dark:bg-blue-600 shadow rounded-lg p-4 border-l-4 border-blue-400">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm text-white mb-1">Confirmed</p>
-              <p className="text-2xl font-bold text-white">{bookingStats.confirmed}</p>
+        <motion.div 
+          whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="bg-white p-6 rounded-xl border shadow-sm relative overflow-hidden"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 rounded-full bg-blue-500 text-white">
+              <CheckCircle className="h-6 w-6" />
             </div>
-            <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <CheckCircle className="h-6 w-6 text-blue-600" />
+            <div className="flex items-center text-xs font-medium text-green-500">
+              <TrendingUp className="h-3 w-3" />
+              <span className="ml-1">+4.3%</span>
             </div>
           </div>
-        </div>
+          
+          <h2 className="text-lg font-medium text-gray-700 mb-1">Confirmed</h2>
+          <p className="text-3xl font-bold text-gray-900">{bookingStats.confirmed}</p>
+          
+          <div className="absolute -right-6 -bottom-10 opacity-10">
+            <CheckCircle className="h-24 w-24" />
+          </div>
+        </motion.div>
         
-        <div className="bg-white dark:bg-green-700 shadow rounded-lg p-4 border-l-4 border-green-500">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm text-white mb-1">Completed</p>
-              <p className="text-2xl font-bold text-white">{bookingStats.completed}</p>
+        <motion.div 
+          whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+          className="bg-white p-6 rounded-xl border shadow-sm relative overflow-hidden"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 rounded-full bg-green-600 text-white">
+              <CheckCircle className="h-6 w-6" />
             </div>
-            <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle className="h-6 w-6 text-green-600" />
+            <div className="flex items-center text-xs font-medium text-green-500">
+              <TrendingUp className="h-3 w-3" />
+              <span className="ml-1">+12.5%</span>
             </div>
           </div>
-        </div>
+          
+          <h2 className="text-lg font-medium text-gray-700 mb-1">Completed</h2>
+          <p className="text-3xl font-bold text-gray-900">{bookingStats.completed}</p>
+          
+          <div className="absolute -right-6 -bottom-10 opacity-10">
+            <CheckCircle className="h-24 w-24" />
+          </div>
+        </motion.div>
         
-        <div className="bg-white dark:bg-red-700 shadow rounded-lg p-4 border-l-4 border-red-500">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm text-white mb-1">Cancelled</p>
-              <p className="text-2xl font-bold text-white">{bookingStats.cancelled}</p>
+        <motion.div 
+          whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+          className="bg-white p-6 rounded-xl border shadow-sm relative overflow-hidden"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 rounded-full bg-red-600 text-white">
+              <XCircle className="h-6 w-6" />
             </div>
-            <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <XCircle className="h-6 w-6 text-red-600" />
+            <div className="flex items-center text-xs font-medium text-red-500">
+              <TrendingDown className="h-3 w-3" />
+              <span className="ml-1">-2.3%</span>
             </div>
           </div>
-        </div>
+          
+          <h2 className="text-lg font-medium text-gray-700 mb-1">Cancelled</h2>
+          <p className="text-3xl font-bold text-gray-900">{bookingStats.cancelled}</p>
+          
+          <div className="absolute -right-6 -bottom-10 opacity-10">
+            <XCircle className="h-24 w-24" />
+          </div>
+        </motion.div>
         
-        <div className="bg-white dark:bg-yellow-600 shadow rounded-lg p-4 border-l-4 border-yellow-400">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm text-white mb-1">No-show</p>
-              <p className="text-2xl font-bold text-white">{bookingStats.noShow}</p>
+        <motion.div 
+          whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.25 }}
+          className="bg-white p-6 rounded-xl border shadow-sm relative overflow-hidden"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 rounded-full bg-amber-500 text-white">
+              <AlertTriangle className="h-6 w-6" />
             </div>
-            <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <AlertTriangle className="h-6 w-6 text-yellow-600" />
+            <div className="flex items-center text-xs font-medium text-amber-500">
+              <TrendingDown className="h-3 w-3" />
+              <span className="ml-1">-5.1%</span>
             </div>
           </div>
-        </div>
+          
+          <h2 className="text-lg font-medium text-gray-700 mb-1">No-show</h2>
+          <p className="text-3xl font-bold text-gray-900">{bookingStats.noShow}</p>
+          
+          <div className="absolute -right-6 -bottom-10 opacity-10">
+            <AlertTriangle className="h-24 w-24" />
+          </div>
+        </motion.div>
       </div>
       
-      <div className="bg-white rounded-lg shadow mb-6">
+      {/* Search & Filters Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        className="bg-white rounded-lg shadow-sm border mb-6"
+      >
         <div className="p-6 border-b border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="relative w-full md:w-64">
@@ -267,7 +362,7 @@ const VaccinationBookings = () => {
               <input
                 type="text"
                 placeholder="Search bookings..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -279,7 +374,7 @@ const VaccinationBookings = () => {
                 <select 
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-transparent border-none text-gray-700 focus:ring-0 focus:outline-none pr-8"
+                  className="bg-transparent border-none text-gray-700 focus:ring-0 focus:outline-none pr-8 cursor-pointer"
                 >
                   <option value="all">All Bookings</option>
                   <option value="scheduled">Scheduled</option>
@@ -309,13 +404,25 @@ const VaccinationBookings = () => {
           </div>
         </div>
         
-        {error && (
-          <div className="mx-6 mt-6 bg-red-50 text-red-800 p-4 rounded-md flex items-start">
-            <XCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-            <p>{error}</p>
-          </div>
-        )}
+        {/* Error section */}
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mx-6 mt-6 bg-red-50 text-red-800 p-4 rounded-md flex items-start"
+            >
+              <XCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+              <p className="flex-grow">{error}</p>
+              <button onClick={() => setError(null)} className="text-red-700 hover:text-red-900">
+                &times;
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
+        {/* Empty state */}
         {filteredBookings.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 m-6 rounded-lg border border-gray-200">
             <Syringe className="h-16 w-16 mx-auto text-gray-400 mb-4" />
@@ -325,6 +432,7 @@ const VaccinationBookings = () => {
             </p>
           </div>
         ) : (
+          // Bookings Table
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -340,7 +448,12 @@ const VaccinationBookings = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredBookings.map((booking) => (
                   <React.Fragment key={booking._id}>
-                    <tr className={`hover:bg-blue-50 transition-colors duration-150 ${expandedBookingId === booking._id ? 'bg-blue-50' : ''}`}>
+                    <motion.tr 
+                      className={`hover:bg-blue-50 transition-colors duration-150 ${expandedBookingId === booking._id ? 'bg-blue-50' : ''}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      layout
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="font-mono">{(booking._id || "").substring(0, 8)}...</div>
                       </td>
@@ -387,12 +500,16 @@ const VaccinationBookings = () => {
                           </button>
                         </div>
                       </td>
-                    </tr>
+                    </motion.tr>
                     {expandedBookingId === booking._id && (
-                      <tr>
+                      <motion.tr
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
                         <td colSpan="6" className="px-6 py-6 bg-blue-50 border-t border-blue-100">
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="bg-white p-5 rounded-lg shadow border border-gray-200">
+                            <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
                               <h3 className="font-semibold text-lg text-gray-900 flex items-center mb-4 pb-2 border-b">
                                 <User className="h-5 w-5 mr-2 text-blue-600" />
                                 Pet Owner Information
@@ -478,7 +595,7 @@ const VaccinationBookings = () => {
                               </div>
                             </div>
                             
-                            <div className="bg-white p-5 rounded-lg shadow border border-gray-200">
+                            <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
                               <h3 className="font-semibold text-lg text-gray-900 flex items-center mb-4 pb-2 border-b">
                                 <Syringe className="h-5 w-5 mr-2 text-blue-600" />
                                 Appointment Details
@@ -609,7 +726,7 @@ const VaccinationBookings = () => {
                             </div>
                           </div>
                         </td>
-                      </tr>
+                      </motion.tr>
                     )}
                   </React.Fragment>
                 ))}
@@ -617,9 +734,9 @@ const VaccinationBookings = () => {
             </table>
           </div>
         )}
-      </div>
+      </motion.div>
       
-      <div className="text-center text-gray-500 text-sm">
+      <div className="text-center text-gray-500 text-sm mt-4">
         Showing {filteredBookings.length} of {bookings.length} vaccination bookings
       </div>
     </div>

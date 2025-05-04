@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import CartProvider from './context/CartContext';
@@ -32,9 +33,20 @@ import ScheduleVaccination from "./pages/ScheduleVaccination";
 import SearchResults from "./pages/SearchResults";
 import Bookings from "./pages/Bookings";
 import ProductForm from './pages/ProductForm';
-import Payment from "./pages/Payment";
+import payment from "./pages/payment.jsx";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import AddProducts from "./pages/AddProducts";
+
+// Create a layout component for pages that need header and footer
+const MainLayout = ({ children }) => (
+  <div className="min-h-screen flex flex-col bg-gray-50">
+    <Header />
+    <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {children}
+    </main>
+    <Footer />
+  </div>
+);
 
 function App() {
   return (
@@ -55,40 +67,34 @@ function App() {
                 <Route path="products/add" element={<ProductForm />} />
                 <Route path="products/edit/:id" element={<ProductForm />} />
               </Route>
-              {/* Main routes with Header and Footer */}
-              <Route path="*" element={
-                <div className="min-h-screen flex flex-col bg-gray-50">
-                  <Header />
-                  <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/home" element={<Home />} />
-                      <Route path="/products" element={<Products />} />
-                      <Route path="/products/:id" element={<ProductDetails />} />
-                      <Route path="/cart" element={<Cart />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/forgotpassword" element={<ForgotPassword />} />
-                      <Route path="/ResetPassword" element={<ResetPassword />} />
-                      <Route path="/verification-pending" element={<VerificationPending/>} />
-                      <Route path="/VerifyOtp" element={<VerifyOtp/>} />
-                      <Route path="/signup" element={<Signup />} />
-                      <Route path="/checkout" element={<Checkout />} />
-                      <Route path="/vaccination" element={<Vaccination />} />
-                      <Route path="/vaccination/:id" element={<VaccinationDetails />} />
-                      <Route path="/aboutus" element={<Aboutus />} />
-                      <Route path="/profile" element={<ProfilePage />} />
-                      <Route path="/edit-profile" element={<EditProfile />} />
-                      <Route path="/BookingConfirm" element={<BookingConfirm />} />
-                      <Route path="/ScheduleVaccination" element={<ScheduleVaccination />} />
-                      <Route path="/search" element={<SearchResults />} />
-                      <Route path="/payment" element={<Payment />} />
-                      <Route path="/payment-success" element={<PaymentSuccess />} />
-                    </Routes>
-                  </main>
-                  <Footer />
-                </div>
-              } />
-              <Route path="/MyBookings" element={<MyBookings />} />
+
+              {/* Main routes with Header and Footer using the layout pattern */}
+              <Route path="/" element={<MainLayout><Home /></MainLayout>} />
+              <Route path="/home" element={<MainLayout><Home /></MainLayout>} />
+              <Route path="/products" element={<MainLayout><Products /></MainLayout>} />
+              <Route path="/products/:id" element={<MainLayout><ProductDetails /></MainLayout>} />
+              <Route path="/cart" element={<MainLayout><Cart /></MainLayout>} />
+              <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
+              <Route path="/forgotpassword" element={<MainLayout><ForgotPassword /></MainLayout>} />
+              <Route path="/ResetPassword" element={<MainLayout><ResetPassword /></MainLayout>} />
+              <Route path="/verification-pending" element={<MainLayout><VerificationPending/></MainLayout>} />
+              <Route path="/VerifyOtp" element={<MainLayout><VerifyOtp/></MainLayout>} />
+              <Route path="/signup" element={<MainLayout><Signup /></MainLayout>} />
+              <Route path="/checkout" element={<MainLayout><Checkout /></MainLayout>} />
+              <Route path="/vaccination" element={<MainLayout><Vaccination /></MainLayout>} />
+              <Route path="/vaccination/:id" element={<MainLayout><VaccinationDetails /></MainLayout>} />
+              <Route path="/aboutus" element={<MainLayout><Aboutus /></MainLayout>} />
+              <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
+              <Route path="/edit-profile" element={<MainLayout><EditProfile /></MainLayout>} />
+              <Route path="/BookingConfirm" element={<MainLayout><BookingConfirm /></MainLayout>} />
+              <Route path="/ScheduleVaccination" element={<MainLayout><ScheduleVaccination /></MainLayout>} />
+              <Route path="/search" element={<MainLayout><SearchResults /></MainLayout>} />
+              <Route path="/payment" element={<MainLayout>{React.createElement(payment)}</MainLayout>} />
+              <Route path="/payment-success" element={<MainLayout><PaymentSuccess /></MainLayout>} />
+              <Route path="/MyBookings" element={<MainLayout><MyBookings /></MainLayout>} />
+              
+              {/* Catch-all route for 404 pages */}
+              <Route path="*" element={<MainLayout><div>Page not found</div></MainLayout>} />
             </Routes>
           </ToastProvider>
         </CartProvider>

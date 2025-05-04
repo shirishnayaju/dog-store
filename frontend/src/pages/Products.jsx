@@ -110,7 +110,7 @@ export default function Products() {
     <div className="bg-gradient-to-b from-blue-50 to-white min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section */}
-        <div className="bg-blue-100 rounded-2xl shadow-lg mb-12 overflow-hidden">
+        <div className="bg-blue-200 rounded-2xl shadow-lg mb-12 overflow-hidden">
           <div className="relative py-12 px-6 md:px-12 text-center">
             <div className="absolute top-0 left-0 w-full h-full bg-blue-600 opacity-10 z-0"></div>
             <div className="relative z-10">

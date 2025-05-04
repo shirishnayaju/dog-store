@@ -868,28 +868,7 @@ export default function BookingConfirm() {
           </motion.div>
         </motion.div>
       </div>
-      
-      {/* Bottom CTA */}
-      <motion.div 
-        className="mt-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-6 shadow-lg text-white flex flex-col md:flex-row justify-between items-center"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.5 }}
-      >
-        <div>
-          <h3 className="text-lg font-semibold">Need to make changes?</h3>
-          <p className="text-purple-100">
-            Call us at {centerDetails?.phone || "+977-1-4123456"} to reschedule or cancel your appointment.
-          </p>
-        </div>
-        <Button 
-          onClick={() => navigate('/support')}
-          className="mt-4 md:mt-0  bg-purple-500 text-indigo-700 hover:bg-gray-100 hover:text-black flex items-center"
-        >
-          Contact Support
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </motion.div>
+
     </motion.div>
   );
 }
