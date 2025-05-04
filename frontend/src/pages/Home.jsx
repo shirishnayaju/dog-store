@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "../components/ui/button";
 import { FaBone, FaFootballBall, FaBed, FaTag, FaLink, FaUtensils, FaPills, FaHeart } from 'react-icons/fa';
-import { ArrowRight, ShoppingBag, UserPlus, LogIn, Search } from 'lucide-react';
+import { ArrowRight, ShoppingBag, UserPlus, LogIn, Search, ArrowUpCircle } from 'lucide-react';
 import Puppies from '../Image/puppies.png'; 
 import axios from 'axios';
 import ProductCard from '../components/ProductCard';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -14,8 +14,12 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [visibleCategory, setVisibleCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
+    
     axios.get('http://localhost:4001/products') 
       .then(response => {
         setFeaturedProducts(response.data);
@@ -26,7 +30,23 @@ export default function Home() {
         setError("Failed to load products.");
         setLoading(false);
       });
+      
+    // Scroll to top button visibility
+    const handleScroll = () => {
+      if (window.scrollY > 400) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const categoryIcons = {
     'All': <FaHeart className="text-pink-500" />,
@@ -342,6 +362,19 @@ export default function Home() {
           </div>
         </motion.div>
       </div>
+      <AnimatePresence>
+        {showScrollTop && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  className="fixed bottom-16 left-16 bg-blue-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-blue-700 transition-colors"
+                  onClick={scrollToTop}
+                >
+                  <ArrowUpCircle size={24} />
+                </motion.button>
+              )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -3,11 +3,13 @@ import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, AlertCircle, Loader, Image as ImageIcon, CheckCircle, Package, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '../context/ToastContext'; // Import useToast
 
 const ProductForm = ({ isEditing = false }) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const API_URL = 'http://localhost:4001';
+  const { addToast } = useToast(); // Use toast context
 
   const initialFormState = {
     name: '',
@@ -24,8 +26,6 @@ const ProductForm = ({ isEditing = false }) => {
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
 
   // Predefined category options
   const categoryOptions = [
@@ -59,14 +59,20 @@ const ProductForm = ({ isEditing = false }) => {
             details: data.details.join(', ')
           });
         } catch (err) {
-          setError(`Failed to load product: ${err.response?.data?.message || err.message}`);
+          const errorMessage = `Failed to load product: ${err.response?.data?.message || err.message}`;
+          setError(errorMessage);
+          addToast({
+            title: 'Error',
+            description: errorMessage,
+            type: 'error'
+          });
         } finally {
           setLoading(false);
         }
       };
       fetchProduct();
     }
-  }, [isEditing, id]);
+  }, [isEditing, id, addToast]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -77,12 +83,24 @@ const ProductForm = ({ isEditing = false }) => {
     const missingFields = requiredFields.filter(field => !formData[field].trim());
     
     if (missingFields.length > 0) {
-      setError(`Missing required fields: ${missingFields.join(', ')}`);
+      const errorMessage = `Missing required fields: ${missingFields.join(', ')}`;
+      setError(errorMessage);
+      addToast({
+        title: 'Validation Error',
+        description: errorMessage,
+        type: 'error'
+      });
       return false;
     }
     
     if (isNaN(formData.price) || parseFloat(formData.price) <= 0) {
-      setError('Price must be a valid positive number');
+      const errorMessage = 'Price must be a valid positive number';
+      setError(errorMessage);
+      addToast({
+        title: 'Validation Error',
+        description: errorMessage,
+        type: 'error'
+      });
       return false;
     }
     
@@ -115,37 +133,33 @@ const ProductForm = ({ isEditing = false }) => {
         ? await axios.put(`${API_URL}/products/${id}`, payload)
         : await axios.post(`${API_URL}/products`, payload);
 
-      setSuccess(true);
-      setShowPopup(true);
+      // Show success toast notification
+      addToast({
+        title: 'Success',
+        description: `Product ${isEditing ? 'updated' : 'added'} successfully!`,
+        type: 'success'
+      });
       
       // Reset form if adding a new product
       if (!isEditing) {
         setFormData(initialFormState);
-      }
-      
-      // Auto close popup and navigate after 2 seconds if editing
-      if (isEditing) {
-        setTimeout(() => {
-          setShowPopup(false);
-          navigate('/admin/products');
-        }, 2000);
+      } else {
+        // Navigate after successful edit
+        setTimeout(() => navigate('/admin/products'), 1000);
       }
     } catch (err) {
       const errorMessage = err.response?.data?.message || 
                          err.response?.data?.error || 
                          'Failed to save product. Please try again.';
       setError(errorMessage);
+      addToast({
+        title: 'Error',
+        description: errorMessage,
+        type: 'error'
+      });
       console.error('Submission error:', err.response?.data || err.message);
     } finally {
       setSubmitLoading(false);
-    }
-  };
-
-  // Function to close the popup
-  const closePopup = () => {
-    setShowPopup(false);
-    if (isEditing) {
-      navigate('/admin/products');
     }
   };
 
@@ -160,49 +174,6 @@ const ProductForm = ({ isEditing = false }) => {
 
   return (
     <div className="p-6">
-      {/* Success Popup */}
-      <AnimatePresence>
-        {showPopup && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-          >
-            <div className="bg-white rounded-lg shadow-xl p-6 m-4 max-w-sm w-full">
-              <div className="flex flex-col items-center text-center">
-                <CheckCircle className="text-green-500 w-16 h-16 mb-4" />
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  Success!
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Product has been {isEditing ? 'updated' : 'added'} successfully.
-                </p>
-                <div className="flex gap-4">
-                  {!isEditing && (
-                    <button
-                      onClick={() => setShowPopup(false)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Add Another Product
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      setShowPopup(false);
-                      navigate('/admin/products');
-                    }}
-                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
-                  >
-                    Go to Products
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Title and actions row */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0 flex items-center">
@@ -218,7 +189,7 @@ const ProductForm = ({ isEditing = false }) => {
         </button>
       </div>
 
-      {/* Error/Success messages */}
+      {/* Error message (optional - can keep for inline errors) */}
       <AnimatePresence>
         {error && (
           <motion.div 
@@ -236,23 +207,6 @@ const ProductForm = ({ isEditing = false }) => {
         )}
       </AnimatePresence>
       
-      <AnimatePresence>
-        {success && !showPopup && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center"
-          >
-            <CheckCircle className="inline mr-2 flex-shrink-0" />
-            <span className="flex-grow">Product {isEditing ? 'updated' : 'created'} successfully!</span>
-            <button onClick={() => setSuccess(false)} className="text-green-700 hover:text-green-900">
-              &times;
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Form */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

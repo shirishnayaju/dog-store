@@ -487,19 +487,17 @@ export default function Vaccination() {
 
       {/* Improved scroll to top button */}
       <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            className="fixed bottom-8 right-8 bg-emerald-600 text-white p-4 rounded-full shadow-lg z-50 hover:bg-emerald-700 transition-all hover:shadow-xl"
-            onClick={scrollToTop}
-            whileHover={{ y: -5 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <ArrowUpCircle size={24} />
-          </motion.button>
-        )}
+            {showScrollTop && (
+                      <motion.button
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        className="fixed bottom-16 left-16 bg-blue-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-blue-700 transition-colors"
+                        onClick={scrollToTop}
+                      >
+                        <ArrowUpCircle size={30} />
+                      </motion.button>
+                    )}
       </AnimatePresence>
     </div>
   );

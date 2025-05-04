@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useToast } from '../context/ToastContext'; // Import useToast
 
 const Customers = () => {
   const [customers, setCustomers] = useState([]);
@@ -12,6 +13,7 @@ const Customers = () => {
   const [sortDirection, setSortDirection] = useState("asc");
   const [selectedCustomers, setSelectedCustomers] = useState([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const { addToast } = useToast(); // Use toast context
 
   // Fetch all customers
   useEffect(() => {
@@ -25,13 +27,18 @@ const Customers = () => {
         setCustomers(data);
       } catch (error) {
         setError(error.message);
+        addToast({
+          title: 'Error',
+          description: 'Failed to fetch customer data',
+          type: 'error'
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchCustomers();
-  }, []);
+  }, [addToast]);
 
   // Handle editing a customer's name
   const handleEdit = async (id) => {
@@ -66,11 +73,19 @@ const Customers = () => {
       setEditedName("");
       
       // Show success toast
-      showToast("Customer updated successfully", "success");
+      addToast({
+        title: 'Success',
+        description: 'Customer updated successfully',
+        type: 'success'
+      });
     } catch (error) {
       console.error("Error updating customer:", error);
       setError("Failed to update customer");
-      showToast("Failed to update customer", "error");
+      addToast({
+        title: 'Error',
+        description: 'Failed to update customer',
+        type: 'error'
+      });
     }
   };
 
@@ -102,11 +117,19 @@ const Customers = () => {
       setCustomerToDelete(null);
       
       // Show success toast
-      showToast("Customer deleted successfully", "success");
+      addToast({
+        title: 'Success',
+        description: 'Customer deleted successfully',
+        type: 'success'
+      });
     } catch (error) {
       console.error("Error deleting customer:", error);
       setError("Failed to delete customer");
-      showToast("Failed to delete customer", "error");
+      addToast({
+        title: 'Error',
+        description: 'Failed to delete customer',
+        type: 'error'
+      });
     }
   };
 
@@ -133,10 +156,18 @@ const Customers = () => {
       setSelectedCustomers([]);
       setShowBulkActions(false);
       
-      showToast(`${selectedCustomers.length} customers deleted successfully`, "success");
+      addToast({
+        title: 'Success',
+        description: `${selectedCustomers.length} customers deleted successfully`,
+        type: 'success'
+      });
     } catch (error) {
       console.error("Error with bulk delete:", error);
-      showToast("Failed to delete some customers", "error");
+      addToast({
+        title: 'Error',
+        description: 'Failed to delete some customers',
+        type: 'error'
+      });
     }
   };
 
@@ -197,21 +228,20 @@ const Customers = () => {
     }
   };
 
-  // Simple toast functionality
-  const [toast, setToast] = useState({ message: "", type: "", visible: false });
-  
-  const showToast = (message, type = "info") => {
-    setToast({ message, type, visible: true });
-    setTimeout(() => {
-      setToast({ message: "", type: "", visible: false });
-    }, 3000);
-  };
-
   // Reset search and filters
   const resetFilters = () => {
     setSearchTerm("");
     setSortField("name");
     setSortDirection("asc");
+  };
+
+  // Show tip using toast notification
+  const showTip = () => {
+    addToast({
+      title: 'Tip',
+      description: "Press 'Escape' to cancel editing",
+      type: 'info'
+    });
   };
 
   if (loading) {
@@ -249,29 +279,6 @@ const Customers = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 rounded-xl">
-      {/* Toast notification */}
-      {toast.visible && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all transform ${
-          toast.type === "success" ? "bg-green-500" : 
-          toast.type === "error" ? "bg-red-500" : 
-          "bg-blue-500"
-        } text-white`}>
-          <div className="flex items-center">
-            {toast.type === "success" && (
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-            )}
-            {toast.type === "error" && (
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            )}
-            {toast.message}
-          </div>
-        </div>
-      )}
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
@@ -344,7 +351,7 @@ const Customers = () => {
 
         {/* Customer Table Card */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          {filteredAndSortedCustomers.length ===.0 ? (
+          {filteredAndSortedCustomers.length === 0 ? (
             <div className="text-center py-16">
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -583,10 +590,10 @@ const Customers = () => {
         </div>
       )}
       
-      {/* Keyboard shortcuts help modal - could be toggled with a button in the future */}
+      {/* Help button */}
       <div className="fixed bottom-4 right-4">
         <button 
-          onClick={() => showToast("Tip: Press 'Escape' to cancel editing", "info")}
+          onClick={showTip}
           className="bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           title="Keyboard shortcuts"
         >

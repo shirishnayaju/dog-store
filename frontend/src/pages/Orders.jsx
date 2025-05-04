@@ -7,6 +7,7 @@ import {
   CheckCircle, XCircle, Clock, Search, Trash, Download, ArrowDownCircle,
   TrendingUp, TrendingDown, ShoppingCart
 } from 'lucide-react';
+import { useToast } from '../context/ToastContext'; // Import useToast
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -23,6 +24,7 @@ const Orders = () => {
     approved: 0,
     cancelled: 0
   });
+  const { addToast } = useToast(); // Use the toast context
 
   useEffect(() => {
     fetchOrders();
@@ -51,6 +53,11 @@ const Orders = () => {
     } catch (err) {
       console.error('Error fetching orders:', err);
       setError('Failed to load orders. Please try again later.');
+      addToast({
+        title: 'Error',
+        description: 'Failed to load orders. Please try again later.',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
       setTimeout(() => setIsRefreshing(false), 500);
@@ -101,15 +108,28 @@ const Orders = () => {
     try {
       await axios.put(`http://localhost:4001/api/orders/${orderId}`, { status: newStatus });
       fetchOrders();
+      addToast({
+        title: 'Success',
+        description: `Order status updated to ${newStatus}`,
+        type: 'success'
+      });
     } catch (err) {
       console.error('Error updating order status:', err);
-      alert('Failed to update order status');
+      addToast({
+        title: 'Error',
+        description: 'Failed to update order status',
+        type: 'error'
+      });
     }
   };
 
   const sendStatusEmail = async (order, status) => {
     if (!order.userEmail) {
-      alert('No email address found for this customer');
+      addToast({
+        title: 'Warning',
+        description: 'No email address found for this customer',
+        type: 'warning'
+      });
       return;
     }
 
@@ -120,10 +140,18 @@ const Orders = () => {
         orderDetails: order,
         status: status || order.status
       });
-      alert(`Email notification sent to ${order.userEmail}`);
+      addToast({
+        title: 'Success',
+        description: `Email notification sent to ${order.userEmail}`,
+        type: 'success'
+      });
     } catch (err) {
       console.error('Error sending email notification:', err);
-      alert('Failed to send email notification');
+      addToast({
+        title: 'Error',
+        description: 'Failed to send email notification',
+        type: 'error'
+      });
     } finally {
       setSendingEmail(prev => ({ ...prev, [order._id]: false }));
     }
@@ -166,7 +194,7 @@ const Orders = () => {
           <button 
             onClick={fetchOrders}
             disabled={isRefreshing}
-            className="flex items-center px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+            className="flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-900 transition-colors disabled:opacity-50"
             title="Refresh orders"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -181,7 +209,7 @@ const Orders = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-white p-6 rounded-xl border shadow-sm relative overflow-hidden"
+          className="bg-blue-400 p-6 rounded-xl border shadow-sm relative overflow-hidden"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 rounded-full bg-blue-600 text-white">
@@ -189,15 +217,14 @@ const Orders = () => {
             </div>
             <div className="flex items-center text-xs font-medium text-green-500">
               <TrendingUp className="h-3 w-3" />
-              <span className="ml-1">+5.2%</span>
             </div>
           </div>
           
-          <h2 className="text-lg font-medium text-gray-700 mb-1">Total Orders</h2>
-          <p className="text-3xl font-bold text-gray-900">{orderStats.total}</p>
+          <h2 className="text-lg font-medium text-white mb-1">Total Orders</h2>
+          <p className="text-3xl font-bold text-white">{orderStats.total}</p>
           
           <div className="absolute -right-6 -bottom-10 opacity-10">
-            <Package className="h-24 w-24" />
+            <Package className="h-48 w-48 " />
           </div>
         </motion.div>
         
@@ -206,7 +233,7 @@ const Orders = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
-          className="bg-white p-6 rounded-xl border shadow-sm relative overflow-hidden"
+          className="bg-yellow-300 p-6 rounded-xl border shadow-sm relative overflow-hidden"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 rounded-full bg-yellow-500 text-white">
@@ -214,15 +241,14 @@ const Orders = () => {
             </div>
             <div className="flex items-center text-xs font-medium text-yellow-500">
               <Clock className="h-3 w-3" />
-              <span className="ml-1">Active</span>
             </div>
           </div>
           
-          <h2 className="text-lg font-medium text-gray-700 mb-1">Pending Orders</h2>
-          <p className="text-3xl font-bold text-gray-900">{orderStats.pending}</p>
+          <h2 className="text-lg font-medium text-white mb-1">Pending Orders</h2>
+          <p className="text-3xl font-bold text-white">{orderStats.pending}</p>
           
           <div className="absolute -right-6 -bottom-10 opacity-10">
-            <Clock className="h-24 w-24" />
+            <Clock className="h-48 w-48" />
           </div>
         </motion.div>
         
@@ -231,7 +257,7 @@ const Orders = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
-          className="bg-white p-6 rounded-xl border shadow-sm relative overflow-hidden"
+          className="bg-green-300 p-6 rounded-xl border shadow-sm relative overflow-hidden"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 rounded-full bg-green-600 text-white">
@@ -239,15 +265,14 @@ const Orders = () => {
             </div>
             <div className="flex items-center text-xs font-medium text-green-500">
               <TrendingUp className="h-3 w-3" />
-              <span className="ml-1">+12.5%</span>
             </div>
           </div>
           
-          <h2 className="text-lg font-medium text-gray-700 mb-1">Approved Orders</h2>
-          <p className="text-3xl font-bold text-gray-900">{orderStats.approved}</p>
+          <h2 className="text-lg font-medium text-white mb-1">Approved Orders</h2>
+          <p className="text-3xl font-bold text-white">{orderStats.approved}</p>
           
           <div className="absolute -right-6 -bottom-10 opacity-10">
-            <CheckCircle className="h-24 w-24" />
+            <CheckCircle className="h-48 w-48" />
           </div>
         </motion.div>
         
@@ -256,23 +281,21 @@ const Orders = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.3 }}
-          className="bg-white p-6 rounded-xl border shadow-sm relative overflow-hidden"
+          className="bg-red-300 p-6 rounded-xl border shadow-sm relative overflow-hidden"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 rounded-full bg-red-600 text-white">
               <XCircle className="h-6 w-6" />
             </div>
             <div className="flex items-center text-xs font-medium text-red-500">
-              <TrendingDown className="h-3 w-3" />
-              <span className="ml-1">-3.4%</span>
             </div>
           </div>
           
-          <h2 className="text-lg font-medium text-gray-700 mb-1">Cancelled Orders</h2>
-          <p className="text-3xl font-bold text-gray-900">{orderStats.cancelled}</p>
+          <h2 className="text-lg font-medium text-white mb-1">Cancelled Orders</h2>
+          <p className="text-3xl font-bold text-white">{orderStats.cancelled}</p>
           
           <div className="absolute -right-6 -bottom-10 opacity-10">
-            <XCircle className="h-24 w-24" />
+            <XCircle className="h-48 w-48" />
           </div>
         </motion.div>
       </div>
@@ -321,13 +344,6 @@ const Orders = () => {
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                 Refresh
-              </button>
-              
-              <button 
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center transition-colors duration-200"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export
               </button>
             </div>
           </div>

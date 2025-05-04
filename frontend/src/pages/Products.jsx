@@ -229,17 +229,17 @@ export default function Products() {
 
       {/* Scroll to top button */}
       <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            className="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-blue-700 transition-colors"
-            onClick={scrollToTop}
-          >
-            <ArrowUpCircle size={24} />
-          </motion.button>
-        )}
+            {showScrollTop && (
+                      <motion.button
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        className="fixed bottom-16 left-16 bg-blue-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-blue-700 transition-colors"
+                        onClick={scrollToTop}
+                      >
+                        <ArrowUpCircle size={24} />
+                      </motion.button>
+                    )}
       </AnimatePresence>
     </div>
   );

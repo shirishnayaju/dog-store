@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { Edit, Trash2, Search, PlusCircle, Filter, ArrowUpDown, CheckCircle, AlertCircle, Eye, RefreshCw, Package } from 'lucide-react';
+import { Edit, Trash2, Search, PlusCircle, Filter, ArrowUpDown, Eye, RefreshCw, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '../context/ToastContext'; // Import useToast
 
 const AdminProducts = () => {
   const navigate = useNavigate();
   const API_URL = 'http://localhost:4001';
+  const { addToast } = useToast(); // Use the toast context
   
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [sortField, setSortField] = useState('name');
@@ -47,13 +47,17 @@ const AdminProducts = () => {
         setLoading(false);
       } catch (err) {
         console.error('Error details:', err);
-        setError('Failed to load products: ' + (err.response?.data?.message || err.message));
+        addToast({
+          title: 'Error',
+          description: 'Failed to load products: ' + (err.response?.data?.message || err.message),
+          type: 'error'
+        });
         setLoading(false);
       }
     };
     
     fetchProducts();
-  }, [API_URL]);
+  }, [API_URL, addToast]);
 
   // Sort products
   const sortProducts = (a, b) => {
@@ -107,14 +111,19 @@ const AdminProducts = () => {
     try {
       await axios.delete(`${API_URL}/products/${productToDelete._id}`);
       setProducts(products.filter(p => p._id !== productToDelete._id));
-      setSuccess(`Product "${productToDelete.name}" deleted successfully`);
+      addToast({
+        title: 'Success',
+        description: `Product "${productToDelete.name}" deleted successfully`,
+        type: 'success'
+      });
       setShowDeleteConfirm(false);
       setProductToDelete(null);
-      
-      // Auto-hide success message after 3 seconds
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError('Failed to delete product: ' + (err.response?.data?.message || err.message));
+      addToast({
+        title: 'Error',
+        description: 'Failed to delete product: ' + (err.response?.data?.message || err.message),
+        type: 'error'
+      });
     }
   };
 
@@ -152,7 +161,7 @@ const AdminProducts = () => {
             <RefreshCw className="h-4 w-4" />
           </button>
           <Link
-            to="/admin/products/add"
+            to="/admin/addproducts"
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 flex items-center shadow-md transition-all hover:-translate-y-0.5"
           >
             <PlusCircle className="h-5 w-5 mr-2" />
@@ -160,39 +169,6 @@ const AdminProducts = () => {
           </Link>
         </div>
       </div>
-
-      {/* Success and error messages */}
-      <AnimatePresence>
-        {error && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center"
-          >
-            <AlertCircle className="inline mr-2 flex-shrink-0" />
-            <span className="flex-grow">{error}</span>
-            <button onClick={() => setError(null)} className="text-red-700 hover:text-red-900">
-              &times;
-            </button>
-          </motion.div>
-        )}
-        
-        {success && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center"
-          >
-            <CheckCircle className="inline mr-2 flex-shrink-0" />
-            <span className="flex-grow">{success}</span>
-            <button onClick={() => setSuccess(null)} className="text-green-700 hover:text-green-900">
-              &times;
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Search and filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
