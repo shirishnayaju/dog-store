@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "../components/ui/button";
-import Dog6 from "../Image/dog6.jpg";
+import Dog6 from "../Image/2f3ca15c897f9fac8a2ea0718a09bcd7-removebg-preview-removebg-preview.png";
 import { 
   ShieldCheck, 
   HeartHandshake, 
@@ -62,14 +62,33 @@ function Aboutus() {
         initial="hidden"
         animate="visible"
         variants={fadeIn}
-        className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-10 mb-12 shadow-lg overflow-hidden relative"
+        className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-10 mb-12 shadow-xl overflow-hidden relative"
       >
-        <div className="flex flex-col md:flex-row items-center justify-between max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row-reverse items-center justify-between max-w-6xl mx-auto gap-8">
           <div className="md:w-1/2 z-10">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight">
-              Why Choose <span className="text-yellow-300">GHARPALUWA?</span>
-            </h1>
-            <div className="space-y-4">
+            <motion.h1 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight"
+            >
+              Why Choose <span className="text-yellow-300 inline-block relative">
+                GHARPALUWA?
+                <span className="absolute bottom-1 left-0 w-full h-1 bg-yellow-300 rounded-full transform scale-x-0 origin-left animate-expandWidth"></span>
+              </span>
+            </motion.h1>
+            <motion.div 
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.1 }
+                }
+              }}
+              className="space-y-4"
+            >
               {[
                 "Wide selection of premium dog food, toys, and accessories",
                 "Expert-curated products for dogs of all sizes and breeds",
@@ -78,32 +97,64 @@ function Aboutus() {
                 "Regular discounts and special offers for loyal customers",
                 "Professional vaccination services for your pets"
               ].map((item, index) => (
-                <div key={index} className="flex items-start gap-3 text-white">
+                <motion.div 
+                  key={index} 
+                  variants={{
+                    hidden: { opacity: 0, x: -20 },
+                    visible: { opacity: 1, x: 0 }
+                  }}
+                  className="flex items-start gap-3 text-white hover:bg-blue-700/50 p-2 rounded-lg transition-all duration-300"
+                >
                   <CheckCircle2 className="w-6 h-6 flex-shrink-0 text-yellow-300 mt-0.5" />
                   <p className="text-lg">{item}</p>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="mt-6"
+            >
+            </motion.div>
           </div>
-          <div className="md:w-2/5 mt-8 md:mt-0 z-10">
+          <motion.div 
+            className="md:w-1/2"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-blue-500 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative">
+              <div className="absolute -inset-1  group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+              <div className="relative  p-2 rounded-2xl">
                 <img 
                   src={Dog6} 
                   alt="Happy dog" 
-                  className="rounded-lg shadow-lg w-full h-auto object-cover transform hover:scale-105 transition-transform duration-300" 
-                  style={{ maxHeight: '450px', objectPosition: 'center' }}
+                  className="w-96 h-96 object-cover rounded-xl transform hover:scale-105 transition-transform duration-300" 
+                  style={{  objectPosition: 'center' }}
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-900/70 to-transparent p-6">
-                  <p className="text-white text-lg font-medium">Your furry friend deserves the best!</p>
-                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full opacity-20 transform translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-yellow-300 rounded-full opacity-10 transform -translate-x-1/2 translate-y-1/2"></div>
+        
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full opacity-20 transform translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-yellow-300 rounded-full opacity-10 transform -translate-x-1/2 translate-y-1/2 animate-pulse"></div>
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-blue-400 rounded-full opacity-10 animate-bounce duration-5000"></div>
+        <motion.div 
+          className="absolute bottom-10 right-10"
+          animate={{ 
+            y: [0, -10, 0],
+            rotate: [0, 5, 0, -5, 0]
+          }}
+          transition={{ 
+            repeat: Infinity,
+            duration: 5
+          }}
+        >
+          <PawPrint className="w-16 h-16 text-yellow-300 opacity-20" />
+        </motion.div>
       </motion.div>
 
       {/* Mission Statement */}
