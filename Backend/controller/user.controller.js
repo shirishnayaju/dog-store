@@ -1,6 +1,7 @@
 import User from "../model/user.model.js";
 import bcryptjs from "bcryptjs";
 import { otpStore } from "../utils/otpStore.js";
+import { generateToken } from "../middleware/auth.js";
 
 // Signup
 export const signup = async (req, res) => {
@@ -16,14 +17,26 @@ export const signup = async (req, res) => {
     const newUser = new User({ name, email, password: hashPassword });
     await newUser.save();
 
-    res.status(201).json({ message: "User created successfully" });
+    // Generate JWT token for the new user
+    const token = generateToken(newUser);
+
+    res.status(201).json({ 
+      message: "User created successfully",
+      token,
+      user: {
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        _id: newUser._id
+      }
+    });
   } catch (error) {
     console.error("Signup error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Login - UPDATED to include role
+// Login - UPDATED to include token
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -36,13 +49,18 @@ export const login = async (req, res) => {
     const isMatch = await bcryptjs.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    // Include role in the response
+    // Generate JWT token
+    const token = generateToken(user);
+
+    // Include token and user data in response
     res.status(200).json({ 
       message: "Login successful", 
+      token,
       user: { 
         name: user.name, 
         email: user.email, 
-        role: user.role 
+        role: user.role,
+        _id: user._id
       } 
     });
   } catch (error) {
@@ -68,13 +86,18 @@ export const loginWithGoogle = async (req, res) => {
       return res.status(404).json({ message: "No account found with this Google email. Please sign up first." });
     }
     
-    // Return user data (similar to normal login)
+    // Generate JWT token
+    const token = generateToken(user);
+    
+    // Return token and user data
     res.status(200).json({
       message: "Login successful",
+      token,
       user: {
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        _id: user._id
       }
     });
     
@@ -267,12 +290,17 @@ export const completeGoogleSignup = async (req, res) => {
     
     await newUser.save();
     
+    // Generate JWT token
+    const token = generateToken(newUser);
+    
     res.status(201).json({ 
       message: "User created successfully with Google account",
+      token,
       user: {
         name: newUser.name,
         email: newUser.email,
-        role: newUser.role
+        role: newUser.role,
+        _id: newUser._id
       }
     });
     

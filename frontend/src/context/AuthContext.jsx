@@ -19,19 +19,45 @@ export function useAuth() {
 // Create the provider component
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  // We can't use useToast here directly since this is outside of a component's render
-  // We'll use a different approach for the provider
   
-  // Initialize user from localStorage
+  // Set up axios interceptor for authentication
+  useEffect(() => {
+    // Configure axios to use the token in all requests
+    const interceptor = axios.interceptors.request.use(
+      (config) => {
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+    
+    // Clean up interceptor when component unmounts
+    return () => {
+      axios.interceptors.request.eject(interceptor);
+    };
+  }, [token]);
+  
+  // Initialize user and token from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    const storedToken = localStorage.getItem("token");
+    
+    if (storedUser && storedToken) {
       try {
-        setUser(JSON.parse(storedUser));
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        setToken(storedToken);
+        
+        // Set default authorization header for all requests
+        axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
       } catch (e) {
         console.error("Failed to parse stored user data", e);
         localStorage.removeItem("user");
+        localStorage.removeItem("token");
       }
     }
     setIsInitialized(true);
@@ -61,19 +87,26 @@ export function AuthProvider({ children }) {
 
       console.log("Full Response from Backend:", response.data);
 
-      // Ensure user data is correctly extracted
+      // Extract user data and token
       const userData = response.data?.user;
-      if (!userData) {
-        throw new Error("User data is missing in response");
+      const authToken = response.data?.token;
+      
+      if (!userData || !authToken) {
+        throw new Error("Authentication data is missing in response");
       }
 
       console.log("Extracted User Data:", userData);
 
-      // Save user data to state and local storage
+      // Save user data and token to state and local storage
       setUser(userData);
+      setToken(authToken);
       localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", authToken);
+      
+      // Set default authorization header
+      axios.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
 
-      // Instead of alert, we'll return an object with a showToast property
+      // Return user data and toast info
       return { userData, showToast: {
         title: "Login Successful", 
         description: `Welcome back, ${userData.name}!`, 
@@ -96,9 +129,12 @@ export function AuthProvider({ children }) {
   // Logout function
   const logout = useCallback(() => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    delete axios.defaults.headers.common["Authorization"];
     
-    // Return toast data instead of showing alert
+    // Return toast data
     return {
       showToast: {
         title: "Logout Successful",
@@ -118,21 +154,24 @@ export function AuthProvider({ children }) {
         password,
       });
 
-      // After signup, we need to log the user in to get their full profile including role
-      const loginResponse = await axios.post("http://localhost:4001/user/login", {
-        email,
-        password,
-      });
-
-      const userData = loginResponse.data?.user;
-      if (!userData) {
-        throw new Error("Signup failed. User data missing.");
+      // Extract user data and token from the response
+      const userData = response.data?.user;
+      const authToken = response.data?.token;
+      
+      if (!userData || !authToken) {
+        throw new Error("Authentication data is missing in response");
       }
 
       console.log("Signup Success:", userData);
 
+      // Save user data and token
       setUser(userData);
+      setToken(authToken);
       localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", authToken);
+      
+      // Set default authorization header
+      axios.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
 
       // Return user data and toast info
       return { userData, showToast: {
@@ -165,16 +204,24 @@ export function AuthProvider({ children }) {
         googleData: decoded
       });
       
+      // Extract user data and token
       const userData = response.data?.user;
-      if (!userData) {
-        throw new Error("Login failed. User data missing.");
+      const authToken = response.data?.token;
+      
+      if (!userData || !authToken) {
+        throw new Error("Authentication data is missing in response");
       }
       
       console.log("Google Login Success:", userData);
       
-      // Save user data to state and local storage
+      // Save user data and token
       setUser(userData);
+      setToken(authToken);
       localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", authToken);
+      
+      // Set default authorization header
+      axios.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
       
       // Return user data and toast info
       return { userData, showToast: {
@@ -195,16 +242,41 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  // Check if the token is valid and renew if needed
+  const checkToken = useCallback(async () => {
+    if (!token) return false;
+    
+    try {
+      // You can implement a token verification endpoint in your backend
+      // For now, we'll just decode and check expiration
+      const decoded = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      
+      if (decoded.exp < currentTime) {
+        // Token is expired, log the user out
+        logout();
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("Token validation error:", error);
+      logout();
+      return false;
+    }
+  }, [token, logout]);
+
   // Create a stable value object with useCallback
   const contextValue = {
     user,
+    token,
     isInitialized,
     login,
     logout,
     signup,
     signupWithGoogle,
     loginWithGoogle,
-    updateUser // Add this to the context value
+    updateUser,
+    checkToken
   };
 
   return (

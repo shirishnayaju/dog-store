@@ -6,6 +6,7 @@ import { FaSyringe, FaShieldAlt, FaCalendarAlt } from 'react-icons/fa';
 import VaccinationCard from '../components/vaccinationCard'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import VaccinationImage from "../Image/download (2).png";
 
 export default function Vaccination() {
   const [vaccinations, setVaccinations] = useState([]);
@@ -105,10 +106,10 @@ export default function Vaccination() {
 
   return (
     <div className="bg-gradient-to-b from-emerald-50 via-teal-50 to-white min-h-screen">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-2 py-4 ">
         {/* Enhanced Hero Section with more beautiful gradient background */}
         <motion.div
-          className="bg-gradient-to-r from-indigo-600 via-blue-600 to-blue-700 text-white rounded-2xl shadow-2xl overflow-hidden mb-12"
+          className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-2xl shadow-2xl overflow-hidden mb-12 "
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -148,11 +149,6 @@ export default function Vaccination() {
                   Schedule Now <Calendar className="w-6 h-6" />
                 </Button>
               </motion.div>
-              
-              {/* Decorative elements with enhanced glowing effects */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 blur-3xl rounded-full -mr-16 -mt-16"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-300/20 blur-2xl rounded-full -ml-16 -mb-16"></div>
-              <div className="absolute bottom-10 right-10 w-32 h-32 bg-amber-300/30 blur-xl rounded-full"></div>
             </div>
             <motion.div 
               className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden p-6 md:p-0"
@@ -160,57 +156,11 @@ export default function Vaccination() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
             >
-              <div className="relative h-full">
-                {/* Enhanced gradient background */}
-                <div className="bg-gradient-to-br from-amber-300 via-amber-400 to-yellow-400 absolute inset-0 rounded-xl"></div>
-                
-                {/* Improved glass-morphism effect */}
-                <div className="bg-white/30 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/50 h-full transform transition-all duration-300 hover:shadow-2xl hover:border-white/60">
-                  <h3 className="text-blue-900/90 text-2xl font-bold mb-4 text-center drop-shadow-md">Our Vaccination Services</h3>
-                  
-                  <div className="grid grid-cols-2 gap-4 h-full">
-                    <div className="flex flex-col justify-between gap-4">
-                      {/* Enhanced Core Vaccines card */}
-                      <div className="bg-gradient-to-br from-white/40 to-white/20 rounded-xl p-4 backdrop-blur-sm shadow-sm transition-all duration-300 hover:bg-white/40 hover:-translate-y-1 group">
-                        <div className="bg-yellow-400/30 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3 group-hover:bg-yellow-400/40 transition-all duration-300 shadow-inner">
-                          <FaShieldAlt className="w-8 h-8 text-yellow-700 group-hover:text-white transition-colors duration-300" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-center text-blue-900">Core Vaccines</h3>
-                        <p className="text-sm text-blue-900/80 text-center">Essential protection for all dogs</p>
-                      </div>
-                      
-                      {/* Enhanced Easy Booking card */}
-                      <div className="bg-gradient-to-br from-white/40 to-white/20 rounded-xl p-4 backdrop-blur-sm shadow-sm transition-all duration-300 hover:bg-white/40 hover:-translate-y-1 group">
-                        <div className="bg-indigo-400/30 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-400/40 transition-all duration-300 shadow-inner">
-                          <FaCalendarAlt className="w-8 h-8 text-indigo-700 group-hover:text-white transition-colors duration-300" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-center text-blue-900">Easy Booking</h3>
-                        <p className="text-sm text-blue-900/80 text-center">Simple online scheduling</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col justify-between gap-4">
-                      {/* Enhanced Non-Core card */}
-                      <div className="bg-gradient-to-br from-white/40 to-white/20 rounded-xl p-4 backdrop-blur-sm shadow-sm transition-all duration-300 hover:bg-white/40 hover:-translate-y-1 group">
-                        <div className="bg-purple-400/30 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-400/40 transition-all duration-300 shadow-inner">
-                          <FaSyringe className="w-8 h-8 text-purple-700 group-hover:text-white transition-colors duration-300" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-center text-blue-900">Non-Core</h3>
-                        <p className="text-sm text-blue-900/80 text-center">Lifestyle-based protection</p>
-                      </div>
-                      
-                      {/* Enhanced Expert Care card */}
-                      <div className="bg-gradient-to-br from-white/40 to-white/20 rounded-xl p-4 backdrop-blur-sm shadow-sm transition-all duration-300 hover:bg-white/40 hover:-translate-y-1 group">
-                        <div className="bg-emerald-400/30 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3 group-hover:bg-emerald-400/40 transition-all duration-300 shadow-inner">
-                          <Shield className="w-8 h-8 text-emerald-700 group-hover:text-white transition-colors duration-300" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-center text-blue-900">Expert Care</h3>
-                        <p className="text-sm text-blue-900/80 text-center">Professional vet services</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <img 
+                src={VaccinationImage} 
+                alt="Vaccination Services" 
+                className="w-90 h-90 object-contain "
+              />
             </motion.div>
           </div>
         </motion.div>
