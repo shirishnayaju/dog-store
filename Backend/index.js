@@ -12,6 +12,7 @@ import mailRoutes from "./route/mailRoutes.js";
 import emailRoutes from "./route/email.route.js";
 import paymentRoutes from "./route/payments.js";
 import dashboardRoutes from "./route/dashboard.route.js"; // New import
+import { subscriberRoutes } from "./route/subscriber.route.js"; // Updated import format
 
 // Load environment variables
 dotenv.config();
@@ -54,6 +55,7 @@ app.use("/api", mailRoutes);
 app.use("/api", emailRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes); // New route added
+app.use('/api/newsletter', subscriberRoutes); // Added subscriber routes
 
 // Default route
 app.get("/", (req, res) => {
