@@ -33,7 +33,7 @@ import ScheduleVaccination from "./pages/ScheduleVaccination";
 import SearchResults from "./pages/SearchResults";
 import Bookings from "./pages/Bookings";
 import ProductForm from './pages/ProductForm';
-import payment from "./pages/payment.jsx";
+import Payment from "./pages/Payment";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import AddProducts from "./pages/AddProducts";
 
@@ -89,7 +89,7 @@ function App() {
               <Route path="/BookingConfirm" element={<MainLayout><BookingConfirm /></MainLayout>} />
               <Route path="/ScheduleVaccination" element={<MainLayout><ScheduleVaccination /></MainLayout>} />
               <Route path="/search" element={<MainLayout><SearchResults /></MainLayout>} />
-              <Route path="/payment" element={<MainLayout>{React.createElement(payment)}</MainLayout>} />
+              <Route path="/payment" element={<MainLayout><Payment /></MainLayout>} />
               <Route path="/payment-success" element={<MainLayout><PaymentSuccess /></MainLayout>} />
               <Route path="/MyBookings" element={<MainLayout><MyBookings /></MainLayout>} />
               
