@@ -99,18 +99,6 @@ const Admin = () => {
                 </ul>
               </nav>
 
-              {/* User Menu & Mobile Navigation Toggle */}
-              <div className="flex items-center space-x-4">
-                {/* Notification Bell */}
-                <button className="p-1 rounded-full text-blue-200 hover:text-white hover:bg-blue-800 relative">
-                  <Bell className="h-6 w-6" />
-                  {notificationsCount > 0 && (
-                    <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
-                      {notificationsCount}
-                    </span>
-                  )}
-                </button>
-
                 {/* User Profile Dropdown */}
                 <div className="relative">
                   <button 
@@ -140,8 +128,7 @@ const Admin = () => {
                         <p className="text-sm font-medium text-gray-800">{user?.name}</p>
                         <p className="text-xs text-gray-500">{user?.email}</p>
                       </div>
-                      <a href="#profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                      <a href="#settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                   
                       <button 
                         onClick={confirmLogout}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -159,7 +146,6 @@ const Admin = () => {
                 >
                   <Menu className="h-6 w-6" />
                 </button>
-              </div>
             </div>
           </div>
           

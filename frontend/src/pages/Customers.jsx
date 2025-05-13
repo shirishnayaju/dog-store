@@ -13,18 +13,31 @@ const Customers = () => {
   const [sortDirection, setSortDirection] = useState("asc");
   const [selectedCustomers, setSelectedCustomers] = useState([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
-  const { addToast } = useToast(); // Use toast context
-
-  // Fetch all customers
+  const { addToast } = useToast(); // Use toast context  // Fetch all customers (excluding admin accounts)
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const response = await fetch("http://localhost:4001/user/users");
+        // Get the token from localStorage
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+          throw new Error("Authentication token not found");
+        }
+        
+        const response = await fetch("http://localhost:4001/user/users", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        
         if (!response.ok) {
           throw new Error("Failed to fetch customer data");
         }
         const data = await response.json();
-        setCustomers(data);
+        
+        // Filter out admin accounts - only show users with role="user"
+        const customerData = data.filter(user => user.role === "user");
+        setCustomers(customerData);
       } catch (error) {
         setError(error.message);
         addToast({
@@ -39,16 +52,22 @@ const Customers = () => {
 
     fetchCustomers();
   }, [addToast]);
-
   // Handle editing a customer's name
   const handleEdit = async (id) => {
     if (!editedName.trim()) return;
     
     try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+      
       const response = await fetch(`http://localhost:4001/user/users/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ name: editedName }),
       });
@@ -88,14 +107,22 @@ const Customers = () => {
       });
     }
   };
-
   // Handle confirming delete action
   const confirmDelete = async () => {
     try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+      
       const response = await fetch(
         `http://localhost:4001/user/users/${customerToDelete}`,
         {
           method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
         }
       );
 
@@ -132,16 +159,24 @@ const Customers = () => {
       });
     }
   };
-
   // Handle bulk delete
   const handleBulkDelete = async () => {
     if (selectedCustomers.length === 0) return;
     
     try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+      
       // In a real app, you might want to use a batch endpoint instead
       const deletePromises = selectedCustomers.map(id => 
         fetch(`http://localhost:4001/user/users/${id}`, {
           method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
         })
       );
       

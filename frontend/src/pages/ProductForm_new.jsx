@@ -1,32 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft, AlertCircle, Loader, Image as ImageIcon, CheckCircle, Package, RefreshCw } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { ArrowLeft, Save, AlertCircle, Loader, Image as ImageIcon, CheckCircle, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useToast } from '../context/ToastContext'; // Import useToast
 
-const ProductForm = ({ isEditing = false }) => {
-  const navigate = useNavigate();
+// Base API URL with the correct port
+const API_BASE_URL = 'http://localhost:4001';
+
+const ProductForm = () => {
   const { id } = useParams();
-  const API_URL = 'http://localhost:4001';
-  const { addToast } = useToast(); // Use toast context
-
-  const initialFormState = {
-    name: '',
-    description: '',
-    price: '',
-    category: '',
-    imageUrl: '',
-    ingredients: '',
-    recommendedFor: '',
-    details: ''
-  };
-
-  const [formData, setFormData] = useState(initialFormState);
-  const [loading, setLoading] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
+  const navigate = useNavigate();
+  const isEditMode = !!id;
+  const { addToast } = useToast();
+  
+  const [loading, setLoading] = useState(isEditMode);
   const [error, setError] = useState(null);
-
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  
   // Predefined category options
   const categoryOptions = [
     'Accessories',
@@ -41,46 +34,80 @@ const ProductForm = ({ isEditing = false }) => {
     'Non-core Vaccine',
     'Seasonal Vaccines'
   ];
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    price: '',
+    description: '',
+    ingredients: '',
+    recommendedFor: '',
+    details: ''
+  });
 
+  // Fetch product data if in edit mode
   useEffect(() => {
-    if (isEditing && id) {
+    if (isEditMode) {
       const fetchProduct = async () => {
         try {
           setLoading(true);
-          const { data } = await axios.get(`${API_URL}/products/${id}`);
+          const response = await axios.get(`${API_BASE_URL}/products/${id}`);
+          const product = response.data;
+          
           setFormData({
-            name: data.name,
-            description: data.description,
-            price: data.price.toString(),
-            category: data.category,
-            imageUrl: data.image,
-            ingredients: data.ingredients.join(', '),
-            recommendedFor: data.recommendedFor.join(', '),
-            details: data.details.join(', ')
+            name: product.name,
+            category: product.category,
+            price: product.price,
+            description: product.description,
+            ingredients: Array.isArray(product.ingredients) ? product.ingredients.join(', ') : '',
+            recommendedFor: Array.isArray(product.recommendedFor) ? product.recommendedFor.join(', ') : '',
+            details: Array.isArray(product.details) ? product.details.join('\n') : ''
           });
+          
+          // Set image preview if an image URL exists
+          if (product.image) {
+            setImagePreview(product.image);
+          }
         } catch (err) {
-          const errorMessage = `Failed to load product: ${err.response?.data?.message || err.message}`;
-          setError(errorMessage);
+          console.error('Error fetching product:', err);
+          setError(`Error fetching product: ${err.response?.status || err.message}`);
+          
           addToast({
             title: 'Error',
-            description: errorMessage,
+            description: `Failed to load product data: ${err.response?.data?.message || err.message}`,
             type: 'error'
           });
         } finally {
           setLoading(false);
         }
       };
+
       fetchProduct();
     }
-  }, [isEditing, id, addToast]);
+  }, [id, isEditMode, addToast]);
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      
+      // Create preview URL for the selected image
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
   };
 
   const validateForm = () => {
-    const requiredFields = ['name', 'description', 'price', 'category', 'imageUrl'];
-    const missingFields = requiredFields.filter(field => !formData[field].trim());
+    const requiredFields = ['name', 'description', 'price', 'category'];
+    const missingFields = requiredFields.filter(field => !formData[field].toString().trim());
     
     if (missingFields.length > 0) {
       const errorMessage = `Missing required fields: ${missingFields.join(', ')}`;
@@ -106,77 +133,96 @@ const ProductForm = ({ isEditing = false }) => {
     
     return true;
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitLoading(true);
+    setSubmitting(true);
     setError(null);
     
     if (!validateForm()) {
-      setSubmitLoading(false);
+      setSubmitting(false);
       return;
     }
-
+    
     try {
+      // Convert strings to arrays
+      const ingredientsArray = formData.ingredients.split(',').map(item => item.trim()).filter(item => item !== '');
+      const recommendedForArray = formData.recommendedFor.split(',').map(item => item.trim()).filter(item => item !== '');
+      const detailsArray = formData.details.split('\n').map(item => item.trim()).filter(item => item !== '');
+      
+      // Create payload object
       const payload = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: parseFloat(formData.price),
         category: formData.category.trim(),
-        image: formData.imageUrl.trim(),
-        ingredients: formData.ingredients.split(',').map(i => i.trim()).filter(Boolean),
-        recommendedFor: formData.recommendedFor.split(',').map(i => i.trim()).filter(Boolean),
-        details: formData.details.split(',').map(i => i.trim()).filter(Boolean)
+        ingredients: ingredientsArray,
+        recommendedFor: recommendedForArray,
+        details: detailsArray
       };
-
-      console.log(`Submitting product data to ${isEditing ? 'update' : 'create'} endpoint:`, payload);
-      console.log(`Request URL: ${API_URL}/products${isEditing ? `/${id}` : ''}`);
+      
+      // If we have an image URL from edit mode and no new file, use the existing URL
+      if (isEditMode && imagePreview && !imagePreview.startsWith('blob:') && !imageFile) {
+        payload.image = imagePreview;
+      } else {
+        // This is where you'd normally handle file uploads
+        // For now, we're just using direct URLs
+        payload.image = imagePreview || '';
+      }
+      
+      console.log(`Submitting to: ${API_BASE_URL}/products${isEditMode ? `/${id}` : ''}`);
+      console.log("Payload data:", payload);
       
       let response;
-      if (isEditing) {
-        response = await axios.put(`${API_URL}/products/${id}`, payload);
-        console.log("Update response:", response.data);
+      if (isEditMode) {
+        response = await axios.put(`${API_BASE_URL}/products/${id}`, payload);
       } else {
-        response = await axios.post(`${API_URL}/products`, payload);
-        console.log("Create response:", response.data);
+        response = await axios.post(`${API_BASE_URL}/products`, payload);
       }
-
-      // Update products in AdminProducts.jsx by forcing a reload
-      window.dispatchEvent(new CustomEvent('productUpdated', { 
-        detail: { product: response.data } 
-      }));
-
+      
+      console.log("Server response:", response.data);
+      
       // Show success toast notification
       addToast({
         title: 'Success',
-        description: `Product ${isEditing ? 'updated' : 'added'} successfully!`,
+        description: `Product ${isEditMode ? 'updated' : 'added'} successfully!`,
         type: 'success'
       });
       
-      // Reset form if adding a new product
-      if (!isEditing) {
-        setFormData(initialFormState);
-      } else {
-        // Navigate after successful edit
-        setTimeout(() => {
-          console.log("Navigating to products list after successful edit");
-          navigate('/admin/products');
-        }, 1500);
-      }
+      // Trigger update event for AdminProducts component
+      window.dispatchEvent(new CustomEvent('productUpdated', { 
+        detail: { product: response.data } 
+      }));
+      
+      // Navigate back to product list after a short delay
+      setTimeout(() => {
+        navigate('/admin/products');
+      }, 1000);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 
-                         err.response?.data?.error || 
-                         'Failed to save product. Please try again.';
-      setError(errorMessage);
+      console.error(`Error ${isEditMode ? 'updating' : 'adding'} product:`, err);
+      const errorMessage = err.response?.data?.message || err.message;
+      
+      setError(`Failed to ${isEditMode ? 'update' : 'add'} product: ${errorMessage}`);
+      
+      // Show error toast notification
       addToast({
         title: 'Error',
-        description: errorMessage,
+        description: `Failed to ${isEditMode ? 'update' : 'add'} product: ${errorMessage}`,
         type: 'error'
       });
-      console.error('Submission error:', err.response?.data || err.message);
     } finally {
-      setSubmitLoading(false);
+      setSubmitting(false);
     }
   };
+
+  // Clean up the object URL when component unmounts or when a new file is selected
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   if (loading) {
     return (
@@ -193,7 +239,7 @@ const ProductForm = ({ isEditing = false }) => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0 flex items-center">
           <Package className="h-6 w-6 mr-3 text-blue-600" />
-          {isEditing ? 'Edit Product' : 'Add New Product'}
+          {isEditMode ? 'Edit Product' : 'Add New Product'}
         </h2>
         <button
           onClick={() => navigate('/admin/products')}
@@ -204,7 +250,7 @@ const ProductForm = ({ isEditing = false }) => {
         </button>
       </div>
 
-      {/* Error message (optional - can keep for inline errors) */}
+      {/* Error message */}
       <AnimatePresence>
         {error && (
           <motion.div 
@@ -221,7 +267,7 @@ const ProductForm = ({ isEditing = false }) => {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* Form */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -230,52 +276,50 @@ const ProductForm = ({ isEditing = false }) => {
         className="bg-white rounded-lg shadow-sm border overflow-hidden"
       >
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Image URL & Preview */}
-            <div className="col-span-1 md:col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Image Upload */}
+            <div className="col-span-1 md:col-span-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 <div className="flex items-center gap-2 mb-2">
                   <ImageIcon size={18} className="text-blue-600" />
-                  <span>Product Image URL*</span>
+                  <span>Product Image*</span>
                 </div>
               </label>
-              <input
-                type="url"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleInputChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="https://example.com/image.jpg"
-                required
-              />
-              {formData.imageUrl && (
-                <div className="mt-4 flex items-center gap-4">
-                  <div className="w-32 h-32 border rounded-lg overflow-hidden bg-white shadow-sm">
-                    <img
-                      src={formData.imageUrl}
-                      alt="Preview"
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.target.src = 'https://placehold.co/150x150?text=Invalid+URL';
-                      }}
-                    />
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    <p className="font-medium mb-1">Image Preview</p>
-                    <p className="text-xs opacity-75">Make sure your image URL is valid and accessible</p>
-                  </div>
-                </div>
-              )}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors cursor-pointer">
+                <input
+                  type="file"
+                  id="image"
+                  name="image"
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  className="hidden"
+                  required={!isEditMode && !imagePreview}
+                />
+                <label htmlFor="image" className="cursor-pointer flex flex-col items-center">
+                  {imagePreview ? (
+                    <div className="flex flex-col items-center">
+                      <img src={imagePreview} alt="Preview" className="h-40 w-auto object-contain mb-2" />
+                      <p className="text-sm text-blue-600 font-medium mt-2">Change image</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
+                      <p className="text-gray-500 font-medium">Upload product image</p>
+                      <p className="text-xs text-gray-400 mt-1">JPG, PNG, or GIF up to 5MB</p>
+                    </div>
+                  )}
+                </label>
+              </div>
             </div>
 
             {/* Product Name */}
-            <div className="col-span-1 md:col-span-2">
+            <div className="col-span-1 md:col-span-3">
               <label className="block text-sm font-medium mb-2 text-gray-700">Product Name*</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="Enter product name"
                 required
@@ -293,7 +337,7 @@ const ProductForm = ({ isEditing = false }) => {
                   type="number"
                   name="price"
                   value={formData.price}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   step="0.01"
                   min="0"
                   className="w-full pl-16 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-blue-300"
@@ -310,7 +354,7 @@ const ProductForm = ({ isEditing = false }) => {
                 <select
                   name="category"
                   value={formData.category}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-blue-300 appearance-none"
                   required
                 >
@@ -325,17 +369,31 @@ const ProductForm = ({ isEditing = false }) => {
                   </svg>
                 </div>
               </div>
-              <p className="mt-1 text-xs text-gray-500">Choose the most relevant category for this product</p>
+              <p className="mt-1 text-xs text-gray-500">Choose the most relevant category</p>
+            </div>
+
+            <div className="col-span-1">
+              <label className="block text-sm font-medium mb-2 text-gray-700">Recommended For*</label>
+              <textarea
+                name="recommendedFor"
+                value={formData.recommendedFor}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter recommendations, separated by commas"
+                rows="3"
+                required
+              />
+              <p className="mt-1 text-xs text-gray-500">Example: Adult dogs, Puppies, Small breeds</p>
             </div>
 
             {/* Lists */}
-            <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="col-span-1 md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700">Ingredients*</label>
                 <textarea
                   name="ingredients"
                   value={formData.ingredients}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="Enter ingredients, separated by commas"
                   rows="3"
@@ -345,41 +403,26 @@ const ProductForm = ({ isEditing = false }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">Recommended For*</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Product Details*</label>
                 <textarea
-                  name="recommendedFor"
-                  value={formData.recommendedFor}
-                  onChange={handleInputChange}
+                  name="details"
+                  value={formData.details}
+                  onChange={handleChange}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  placeholder="Enter recommendations, separated by commas"
-                  rows="3"
+                  placeholder="Enter product details, one feature per line"
+                  rows="4"
                   required
                 />
-                <p className="mt-1 text-xs text-gray-500">Example: Adult dogs, Puppies, Small breeds</p>
+                <p className="mt-1 text-xs text-gray-500">Example: Grain-free, High protein, Organic</p>
               </div>
             </div>
 
-            {/* Details and Description */}
-            <div className="col-span-1 md:col-span-2">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Product Details*</label>
-              <textarea
-                name="details"
-                value={formData.details}
-                onChange={handleInputChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="Enter product details, separated by commas"
-                rows="3"
-                required
-              />
-              <p className="mt-1 text-xs text-gray-500">Example: Grain-free, High protein, Organic</p>
-            </div>
-
-            <div className="col-span-1 md:col-span-2">
+            <div className="col-span-1 md:col-span-3">
               <label className="block text-sm font-medium mb-2 text-gray-700">Description*</label>
               <textarea
                 name="description"
                 value={formData.description}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="Enter detailed product description"
                 rows="4"
@@ -400,10 +443,10 @@ const ProductForm = ({ isEditing = false }) => {
             </button>
             <button
               type="submit"
-              disabled={submitLoading}
+              disabled={submitting}
               className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 shadow-sm"
             >
-              {submitLoading ? (
+              {submitting ? (
                 <>
                   <Loader className="animate-spin h-5 w-5" />
                   <span>Processing...</span>
@@ -411,7 +454,7 @@ const ProductForm = ({ isEditing = false }) => {
               ) : (
                 <>
                   <Save className="h-5 w-5" />
-                  <span>{isEditing ? 'Update Product' : 'Create Product'}</span>
+                  <span>{isEditMode ? 'Update Product' : 'Create Product'}</span>
                 </>
               )}
             </button>

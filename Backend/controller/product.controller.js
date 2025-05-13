@@ -45,20 +45,32 @@ export const addProduct = async (req, res) => {
 // Update product by ID
 export const updateProduct = async (req, res) => {
   try {
+    console.log("Received update request with data:", req.body);
+    
+    // Extract data from request body
     const { name, category, price, description, image, ingredients, recommendedFor, details } = req.body;
+    
+    // Construct update object with data validation
+    const updateData = {
+      name: name || '',
+      category: category || '',
+      price: parseFloat(price) || 0,
+      description: description || '',
+      ingredients: Array.isArray(ingredients) ? ingredients : [],
+      recommendedFor: Array.isArray(recommendedFor) ? recommendedFor : [],
+      details: Array.isArray(details) ? details : []
+    };
+    
+    // Only update image if provided
+    if (image) {
+      updateData.image = image;
+    }
+    
+    console.log("Updating product with processed data:", updateData);
     
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
-      {
-        name,
-        category,
-        price,
-        description,
-        image,
-        ingredients,
-        recommendedFor,
-        details
-      },
+      updateData,
       { new: true } // Return the updated document
     );
     
@@ -66,8 +78,10 @@ export const updateProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
     
+    console.log("Product updated successfully:", updatedProduct);
     res.status(200).json(updatedProduct);
   } catch (error) {
+    console.error("Error updating product:", error);
     res.status(500).json({ message: 'Error updating product', error: error.message });
   }
 };

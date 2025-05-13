@@ -34,30 +34,81 @@ const AdminProducts = () => {
     'Non-core Vaccine',
     'Seasonal Vaccines'
   ];
+  // Function to fetch products
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching products from:', `${API_URL}/products`);
+      const { data } = await axios.get(`${API_URL}/products`);
+      console.log('Products received:', data.length);
+      setProducts(data);
+    } catch (err) {
+      console.error('Error details:', err);
+      addToast({
+        title: 'Error',
+        description: 'Failed to load products: ' + (err.response?.data?.message || err.message),
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Fetch products
+  // Fetch products on component mount
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        console.log('Fetching products from:', `${API_URL}/products`);
-        const { data } = await axios.get(`${API_URL}/products`);
-        console.log('Products received:', data);
-        setProducts(data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error details:', err);
-        addToast({
-          title: 'Error',
-          description: 'Failed to load products: ' + (err.response?.data?.message || err.message),
-          type: 'error'
+    fetchProducts();
+  }, [API_URL, addToast]);
+    // Listen for product updates from other components
+  useEffect(() => {
+    // Create event handler function
+    const handleProductUpdate = (event) => {
+      console.log("AdminProducts: Detected product update event");
+      
+      // Log the updated product if available in the event detail
+      if (event.detail && event.detail.product) {
+        console.log("Updated product data:", event.detail.product);
+        
+        // Optimistically update the products list if we have the updated product
+        setProducts(prevProducts => {
+          // Check if this is an update to an existing product
+          const updatedProductId = event.detail.product._id;
+          const existingIndex = prevProducts.findIndex(p => p._id === updatedProductId);
+          
+          if (existingIndex !== -1) {
+            // Replace the existing product with the updated one
+            const updatedProducts = [...prevProducts];
+            updatedProducts[existingIndex] = event.detail.product;
+            
+            addToast({
+              title: 'Product Updated',
+              description: `${event.detail.product.name} has been updated successfully.`,
+              type: 'success'
+            });
+            
+            return updatedProducts;
+          } else {
+            // It's a new product - add it to the beginning of the list
+            addToast({
+              title: 'Product Added',
+              description: `${event.detail.product.name} has been added successfully.`,
+              type: 'success'
+            });
+            
+            return [event.detail.product, ...prevProducts];
+          }
         });
-        setLoading(false);
+      } else {
+        // If we don't have the product data, just fetch all products
+        fetchProducts();
       }
     };
     
-    fetchProducts();
-  }, [API_URL, addToast]);
+    window.addEventListener('productUpdated', handleProductUpdate);
+    
+    return () => {
+      window.removeEventListener('productUpdated', handleProductUpdate);
+    };
+  }, [addToast]);
 
   // Sort products
   const sortProducts = (a, b) => {
@@ -151,14 +202,22 @@ const AdminProducts = () => {
         <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0 flex items-center">
           <Package className="h-6 w-6 mr-3 text-blue-600" />
           Product Management
-        </h2>
-        <div className="flex space-x-3">
+        </h2>        <div className="flex space-x-3">
           <button 
-            onClick={() => window.location.reload()} 
-            className="flex items-center px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+            onClick={() => {
+              fetchProducts();
+              addToast({
+                title: 'Refreshing',
+                description: 'Refreshing products list...',
+                type: 'info'
+              });
+            }} 
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
             title="Refresh products"
+            disabled={loading}
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Loading...' : ''}
           </button>
           <Link
             to="/admin/addproducts"
