@@ -7,8 +7,8 @@ export default function Footer() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Logo and tagline */}
         <div className="flex flex-col items-center mb-10">
-          <h2 className="text-3xl font-bold mb-2">GHARPALUWA</h2>
-          <p className="text-gray-400 text-center max-w-md">Your one-stop shop for premium dog products and services</p>
+          <h2 className="text-3xl font-bold mb-2 ">GHARPALUWA</h2>
+          <p className="text-white text-center max-w-md">Your one-stop shop for premium dog products and services</p>
         </div>
         
         {/* Main footer content */}

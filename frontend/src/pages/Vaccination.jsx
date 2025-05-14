@@ -53,14 +53,14 @@ export default function Vaccination() {
   // Modern icons with consistent styling
   const categoryIcons = {
     'Vaccination': <FaSyringe className="text-green-500" />,
-    'Core Vaccine': <FaShieldAlt className="text-blue-500" />,
+    'Core Vaccine': <FaShieldAlt className="text-red-500" />,
     'Non-Core Vaccine': <FaSyringe className="text-purple-500" />,
     'Seasonal Vaccines': <FaCalendarAlt className="text-orange-500" />
   };
 
   const categoryColors = {
     'Vaccination': 'bg-green-600 hover:bg-green-700',
-    'Core Vaccine': 'bg-blue-600 hover:bg-blue-700',
+    'Core Vaccine': 'bg-red-600 hover:bg-red-700',
     'Non-Core Vaccine': 'bg-purple-600 hover:bg-purple-700',
     'Seasonal Vaccines': 'bg-orange-600 hover:bg-orange-700'
   };

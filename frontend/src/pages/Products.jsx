@@ -49,28 +49,28 @@ export default function Products() {
   
     const categories = ['All', 'Food', 'Toys', 'Supplements', 'Accessories', 'Belts','Wet Foods', 'Cage'];
   
-    const categoryIcons = {
-      'All': <FaHeart className="text-pink-500" />,
-      'Food': <FaUtensils className="text-yellow-500" />,
-      'Toys': <FaFootballBall className="text-amber-800" />,
-      'Supplements': <FaPills className="text-red-500" />,
-      'Accessories': <FaTag className="text-purple-500" />,
-      'Belts': <FaLink className="text-gray-500" />,
-      'Wet Foods': <FaBone className="text-green-500" />,
-      'Cage': <FaBed className="text-orange-500" />
-  
-    };
-  
-    const categoryColors = {
-      'All': 'bg-pink-600 hover:bg-pink-700',
-      'Food': 'bg-yellow-600 hover:bg-yellow-700',
-      'Toys': 'bg-amber-800 hover:bg-amber-900',
-      'Supplements': 'bg-red-600 hover:bg-red-700',
-      'Accessories': 'bg-purple-600 hover:bg-purple-700',
-      'Belts': 'bg-gray-600 hover:bg-gray-700',
-      'Wet Foods': 'bg-green-600 hover:bg-green-700', 
-      'Cage': 'bg-orange-600 hover:bg-orange-700'
-    };
+  const categoryIcons = {
+    'All': <FaHeart className="text-pink-500" />,
+    'Food': <FaUtensils className="text-yellow-500" />,
+    'Toys': <FaFootballBall className="text-yellow-700" />,
+    'Supplements': <FaPills className="text-red-500" />,
+    'Accessories': <FaTag className="text-purple-500" />,
+    'Belts': <FaLink className="text-gray-300" />,
+    'Wet Foods': <FaBone className="text-green-500" />,
+    'Cage': <FaBed className="text-orange-500" />
+
+  };
+
+  const categoryColors = {
+    'All': 'bg-pink-600 hover:bg-pink-700',
+    'Food': 'bg-yellow-600 hover:bg-yellow-700',
+    'Toys': 'bg-yellow-800 hover:bg-yellow-900',
+    'Supplements': 'bg-red-600 hover:bg-red-700',
+    'Accessories': 'bg-purple-600 hover:bg-purple-700',
+    'Belts': 'bg-gray-600 hover:bg-gray-700',
+    'Wet Foods': 'bg-green-600 hover:bg-green-700', 
+    'Cage': 'bg-orange-600 hover:bg-orange-700'
+  };
 
   // Filter products by both category and search term
   const filteredProducts = products
@@ -167,7 +167,7 @@ export default function Products() {
             {activeCategory !== 'All' ? activeCategory : 'All Products'}
             {searchTerm && <span className="text-blue-600"> • "{searchTerm}"</span>}
           </h2>
-          <p className="text-gray-500">
+          <p className="text-gray-500 ">
             Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
           </p>
         </div>

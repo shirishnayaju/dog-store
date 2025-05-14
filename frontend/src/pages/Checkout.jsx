@@ -12,7 +12,10 @@ import {
   CreditCard,
   Truck,
   Shield,
-  ChevronRight
+  ChevronRight,
+  Check,
+  ArrowLeft,
+  Plus
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -34,12 +37,24 @@ export default function Checkout() {
   const [step, setStep] = useState(1); // For multi-step checkout
   
   // API base URL from environment
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4001";
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4001";  // Load user profile data from auth context
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
-  // Debug user object
   useEffect(() => {
     if (user) {
       console.log('Full user object from auth context:', JSON.stringify(user, null, 2));
+
+      // Small delay to simulate profile loading
+      setTimeout(() => {
+        // Use data from the user object directly
+        if (user.name) setName(user.name);
+        if (user.phoneNumber) setPhoneNumber(user.phoneNumber);
+        if (user.city) setCity(user.city);
+        if (user.colony) setColony(user.colony);
+        
+        // Set profile as loaded
+        setProfileLoaded(true);
+      }, 500);
     }
   }, [user]);
 
@@ -72,11 +87,20 @@ export default function Checkout() {
       }
     }
   }, [user]);
-
   // Pre-fill form with user data if available
   useEffect(() => {
-    if (user && user.displayName) {
-      setName(user.displayName);
+    if (user) {
+      // Try to get the name from different properties (name or displayName)
+      if (user.name) {
+        setName(user.name);
+      } else if (user.displayName) {
+        setName(user.displayName);
+      }
+      
+      // If available, also pre-fill phone number
+      if (user.phoneNumber) {
+        setPhoneNumber(user.phoneNumber);
+      }
     }
   }, [user]);
 
@@ -245,11 +269,28 @@ export default function Checkout() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto mt-6 p-4 md:p-8 bg-white rounded-xl shadow-lg">
+    <div className="max-w-5xl mx-auto mt-6 p-4 md:p-8 bg-white rounded-xl shadow-lg">      <div className="mb-4">
+        <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4">
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          <span>Back to Home</span>
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
         <div className="flex items-center">
           <CreditCard className="h-7 w-7 text-blue-600 mr-3" />
-          <h1 className="text-3xl font-bold text-gray-800">Checkout</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Checkout</h1>          {!profileLoaded && user && (
+            <div className="ml-3 inline-flex items-center">
+              <div className="w-4 h-4 border-2 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
+              <span className="ml-2 text-sm text-blue-600">Loading profile...</span>
+            </div>
+          )}
+          {profileLoaded && user && user.name && (
+            <div className="ml-3 inline-flex items-center text-sm text-green-600">
+              <Check className="w-4 h-4 mr-1" />
+              Profile loaded
+            </div>
+          )}
         </div>
         <div className="text-sm text-gray-500">
           {userEmail ? userEmail : 'Not logged in'}
@@ -267,27 +308,42 @@ export default function Checkout() {
                 <User className="h-5 w-5 text-blue-600 mr-2" />
                 <h2 className="text-xl font-semibold text-gray-800">Contact Information</h2>
               </div>
-              <div className="space-y-5">
-                {/* Name */}
+              <div className="space-y-5">                {/* Name */}
                 <div>
                   <Label htmlFor="name" className="text-gray-700 font-medium">
                     Full Name <span className="text-red-500">*</span>
+                    {user && user.name && (
+                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        From profile
+                      </span>
+                    )}
                   </Label>
-                  <Input
-                    type="text"
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="mt-1 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                    placeholder="Enter your full name"
-                  />
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      className="mt-1 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Enter your full name"
+                    />
+                    {user && user.name && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <User className="h-4 w-4 text-blue-500" />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                
-                {/* Phone Number */}
+                  {/* Phone Number */}
                 <div>
                   <Label htmlFor="phoneNumber" className="text-gray-700 font-medium">
                     Phone Number <span className="text-red-500">*</span>
+                    {user && user.phoneNumber && (
+                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        From profile
+                      </span>
+                    )}
                   </Label>
                   <div className="relative mt-1">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -306,15 +362,23 @@ export default function Checkout() {
                   {phoneError && (
                     <p className="text-red-500 text-sm mt-1">{phoneError}</p>
                   )}
+                </div>                <div className="flex space-x-4">
+                  <Link to="/cart" className="mt-4 w-1/3">
+                    <Button
+                      type="button"
+                      className="w-full py-3 bg-blue-500 hover:bg-amber-700 text-gray-800 font-medium rounded-lg flex items-center justify-center"
+                    >
+                      <ArrowLeft className="mr-2 h-4 w-4" /> Back to Cart
+                    </Button>
+                  </Link>
+                  <Button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="mt-4 w-2/3 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg flex items-center justify-center"
+                  >
+                    Continue to Delivery <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
-
-                <Button
-                  type="button"
-                  onClick={handleNextStep}
-                  className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg flex items-center justify-center"
-                >
-                  Continue to Delivery <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
               </div>
             </div>
           )}
@@ -325,40 +389,61 @@ export default function Checkout() {
                 <MapPin className="h-5 w-5 text-blue-600 mr-2" />
                 <h2 className="text-xl font-semibold text-gray-800">Delivery Address</h2>
               </div>
-              <div className="space-y-5">
-                {/* City */}
+              <div className="space-y-5">                {/* City */}
                 <div>
                   <Label htmlFor="city" className="text-gray-700 font-medium">
                     City <span className="text-red-500">*</span>
+                    {user && user.city && (
+                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        From profile
+                      </span>
+                    )}
                   </Label>
-                  <select
-                    id="city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="block w-full p-2 mt-1 bg-gray-50 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                    required
-                  >
-                    <option value="">Select City</option>
-                    <option value="Kathmandu">Kathmandu</option>
-                    <option value="Bhaktapur">Bhaktapur</option>
-                    <option value="Lalitpur">Lalitpur</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="city"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="block w-full p-2 mt-1 bg-gray-50 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      required
+                    >
+                      <option value="">Select City</option>
+                      <option value="Kathmandu">Kathmandu</option>
+                      <option value="Bhaktapur">Bhaktapur</option>
+                      <option value="Lalitpur">Lalitpur</option>
+                    </select>
+                    {user && user.city && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <MapPin className="h-4 w-4 text-blue-500" />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                
-                {/* Colony */}
+                  {/* Colony */}
                 <div>
                   <Label htmlFor="colony" className="text-gray-700 font-medium">
                     Colony/Area <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    type="text"
-                    id="colony"
-                    value={colony}
-                    onChange={(e) => setColony(e.target.value)}
-                    required
-                    className="mt-1 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                    placeholder="Enter your neighborhood/colony"
-                  />
+                    {user && user.colony && (
+                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        From profile
+                      </span>
+                    )}
+                  </Label>                  <div className="relative">
+                    <Input
+                      type="text"
+                      id="colony"
+                      value={colony}
+                      onChange={(e) => setColony(e.target.value)}
+                      required
+                      className="mt-1 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      placeholder="Enter your neighborhood/colony"
+                    />
+                    {user && user.colony && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <MapPin className="h-4 w-4 text-blue-500" />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Order Notes */}
@@ -413,10 +498,23 @@ export default function Checkout() {
                     >
                       Edit
                     </button>
-                  </div>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p>{name}</p>
-                    <p>Phone: {phoneNumber}</p>
+                  </div>                  <div className="space-y-1 text-sm text-gray-600">
+                    <p className="flex items-center">
+                      {name}
+                      {user && user.name && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          From profile
+                        </span>
+                      )}
+                    </p>
+                    <p className="flex items-center">
+                      Phone: {phoneNumber}
+                      {user && user.phoneNumber && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          From profile
+                        </span>
+                      )}
+                    </p>
                     <p>{userEmail}</p>
                   </div>
                 </div>
@@ -431,10 +529,23 @@ export default function Checkout() {
                     >
                       Edit
                     </button>
-                  </div>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p>City: {city}</p>
-                    <p>Area: {colony}</p>
+                  </div>                  <div className="space-y-1 text-sm text-gray-600">
+                    <p className="flex items-center">
+                      City: {city}
+                      {user && user.city && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          From profile
+                        </span>
+                      )}
+                    </p>
+                    <p className="flex items-center">
+                      Area: {colony}
+                      {user && user.colony && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          From profile
+                        </span>
+                      )}
+                    </p>
                     {orderNotes && (
                       <div className="mt-2 text-xs text-gray-500">
                         <p className="font-medium">Notes:</p>
@@ -483,12 +594,19 @@ export default function Checkout() {
           )}
         </div>
 
-        {/* Right Column - Order Summary */}
-        <div className="lg:col-span-1">
+        {/* Right Column - Order Summary */}        <div className="lg:col-span-1">
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-6 rounded-xl shadow-md sticky top-6">
-            <div className="flex items-center mb-4">
-              <ShoppingBag className="h-5 w-5 mr-2" />
-              <h2 className="text-xl font-semibold">Order Summary</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <ShoppingBag className="h-5 w-5 mr-2" />
+                <h2 className="text-xl font-semibold">Order Summary</h2>
+              </div>
+              <Link to="/cart">
+                <button className="text-xs bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded flex items-center">
+                  <ArrowLeft className="h-3 w-3 mr-1" />
+                  Cart
+                </button>
+              </Link>
             </div>
 
             {items.length === 0 ? (
@@ -532,8 +650,17 @@ export default function Checkout() {
                   <div className="flex justify-between font-bold text-lg pt-2 border-t border-blue-500/30">
                     <span>Total</span>
                     <span>Rs {total.toFixed(2)}</span>
-                  </div>
-                  {totalError && <p className="text-red-300 text-sm">{totalError}</p>}
+                  </div>                  {totalError && <p className="text-red-300 text-sm">{totalError}</p>}
+                </div>
+
+                {/* Add More Products Button */}
+                <div className="mt-4">
+                  <Link to="/products">
+                    <button className="w-full py-2 px-4 bg-blue-500/30 hover:bg-blue-500/50 text-white rounded-lg font-medium transition duration-200 flex items-center justify-center">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add More Products
+                    </button>
+                  </Link>
                 </div>
 
                 {/* Trust Badges */}

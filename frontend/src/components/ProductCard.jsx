@@ -101,9 +101,7 @@ function ProductCard({ product, categoryIcons }) {
                 Rs {product.price.toFixed(2)}
               </span>
             )}
-            <span className="text-xs text-gray-500">
-              {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
-            </span>
+          
           </div>
           
           <div className="flex gap-2">

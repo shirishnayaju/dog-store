@@ -32,7 +32,7 @@ import MyBookings from "./pages/MyBookings";
 import ScheduleVaccination from "./pages/ScheduleVaccination";
 import SearchResults from "./pages/SearchResults";
 import Bookings from "./pages/Bookings";
-import ProductForm from './pages/ProductForm';
+import ProductForm from './pages/ProductForm_new';
 import Payment from "./pages/Payment";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import AddProducts from "./pages/AddProducts";

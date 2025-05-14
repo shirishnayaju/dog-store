@@ -128,10 +128,10 @@ export default function Home() {
   const categoryIcons = {
     'All': <FaHeart className="text-pink-500" />,
     'Food': <FaUtensils className="text-yellow-500" />,
-    'Toys': <FaFootballBall className="text-amber-800" />,
+    'Toys': <FaFootballBall className="text-yellow-700" />,
     'Supplements': <FaPills className="text-red-500" />,
     'Accessories': <FaTag className="text-purple-500" />,
-    'Belts': <FaLink className="text-gray-500" />,
+    'Belts': <FaLink className="text-gray-300" />,
     'Wet Foods': <FaBone className="text-green-500" />,
     'Cage': <FaBed className="text-orange-500" />
 
@@ -140,7 +140,7 @@ export default function Home() {
   const categoryColors = {
     'All': 'bg-pink-600 hover:bg-pink-700',
     'Food': 'bg-yellow-600 hover:bg-yellow-700',
-    'Toys': 'bg-amber-800 hover:bg-amber-900',
+    'Toys': 'bg-yellow-800 hover:bg-yellow-900',
     'Supplements': 'bg-red-600 hover:bg-red-700',
     'Accessories': 'bg-purple-600 hover:bg-purple-700',
     'Belts': 'bg-gray-600 hover:bg-gray-700',
@@ -283,12 +283,12 @@ export default function Home() {
                       <User className="w-8 h-8 text-white" />
                     </motion.div>
                     <h3 className="text-2xl md:text-3xl font-bold mb-4 md:mb-2 text-emerald-800 flex items-center gap-2 bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
-                      Welcome back, {user.name || "Friend"}! 
+                      Welcome back, {user.name || "Friend"}!❤️
                       <motion.span 
                         initial={{ rotate: -20 }} 
                         animate={{ rotate: 20 }} 
                         transition={{ yoyo: Infinity, duration: 0.5, repeatDelay: 1.5 }}
-                      >🐩</motion.span>
+                      > </motion.span>
                     </h3>
                   </div>
                   
@@ -680,6 +680,115 @@ export default function Home() {
         </motion.div>
       </motion.div>
 
+        {/* Featured Products Section */}
+        <motion.div 
+          className="mb-16"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+            <div className="relative mb-4 md:mb-0">
+              <h2 className="text-3xl md:text-4xl font-bold bg-blue-600 bg-clip-text text-transparent">Featured Products</h2>
+              <motion.div 
+                className="h-1 w-24 bg-blue-700 mt-2"
+                initial={{ width: 0 }}
+                whileInView={{ width: "6rem" }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+              ></motion.div>
+            </div>
+            <Link to="/products">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button className=" bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 px-6 py-3 rounded-lg shadow-md transform transition-all">
+                  View All Products
+                  <ArrowRight className="w-4 h-4 animate-pulse" />
+                </Button>
+              </motion.div>
+            </Link>
+          </div>
+
+          {/* Category Selection - Enhanced with animation and better styling */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-md mb-8 border border-gray-200 overflow-x-auto"
+          >
+            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+              {categories.map(category => (
+                <motion.div 
+                  key={category}
+                  whileHover={{ scale: 1.05, y: -3 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={() => setVisibleCategory(category)}
+                    className={`px-5 py-2 rounded-full flex items-center gap-2 transition-all ${
+                      visibleCategory === category 
+                        ? `${categoryColors[category]} text-black shadow-lg` 
+                        : 'bg-blue-600 text-black border hover:bg-blue-400'
+                    }`}
+                  >
+                    <span>{categoryIcons[category]}</span>
+                    <span>{category}</span>
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Category Display */}
+          <motion.div 
+            className="bg-white rounded-2xl shadow-xl p-8 mb-12 border border-gray-100"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold flex items-center text-gray-800">
+                {categoryIcons[visibleCategory]} 
+                <span className="ml-2">{visibleCategory} Products</span>
+              </h2>
+            </div>
+            
+            {filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
+                {filteredProducts.map(product => (
+                  <motion.div 
+                    key={product._id} 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    whileHover={{ y: -5 }}
+                  >
+                    <ProductCard 
+                      product={product} 
+                      categoryIcons={categoryIcons}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-blue-50 rounded-xl p-8 text-center">
+                <p className="text-lg text-blue-800">No products found in this category{searchQuery ? ` matching "${searchQuery}"` : ''}.</p>
+                <Button 
+                  onClick={() => {setSearchQuery(''); setVisibleCategory('All');}} 
+                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Reset Filters
+                </Button>
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
+
+        
       
         {/* Instagram Feed Section - New Addition */}
         <motion.div
@@ -873,114 +982,6 @@ or DM @gharpaluwa
           </div>
         </motion.div>
 
-        {/* Featured Products Section */}
-        <motion.div 
-          className="mb-16"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-            <div className="relative mb-4 md:mb-0">
-              <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-700 to-purple-700 bg-clip-text text-transparent">Featured Products</h2>
-              <motion.div 
-                className="h-1 w-24 bg-gradient-to-r from-blue-500 to-purple-500 mt-2"
-                initial={{ width: 0 }}
-                whileInView={{ width: "6rem" }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                viewport={{ once: true }}
-              ></motion.div>
-            </div>
-            <Link to="/products">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white flex items-center gap-2 px-6 py-3 rounded-lg shadow-md transform transition-all">
-                  View All Products
-                  <ArrowRight className="w-4 h-4 animate-pulse" />
-                </Button>
-              </motion.div>
-            </Link>
-          </div>
-
-          {/* Category Selection - Enhanced with animation and better styling */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-md mb-8 border border-gray-200 overflow-x-auto"
-          >
-            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-              {categories.map(category => (
-                <motion.div 
-                  key={category}
-                  whileHover={{ scale: 1.05, y: -3 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    onClick={() => setVisibleCategory(category)}
-                    className={`px-5 py-2 rounded-full flex items-center gap-2 transition-all ${
-                      visibleCategory === category 
-                        ? `${categoryColors[category]} text-black shadow-lg` 
-                        : 'bg-blue-600 text-black border hover:bg-blue-400'
-                    }`}
-                  >
-                    <span>{categoryIcons[category]}</span>
-                    <span>{category}</span>
-                  </Button>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Category Display */}
-          <motion.div 
-            className="bg-white rounded-2xl shadow-xl p-8 mb-12 border border-gray-100"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold flex items-center text-gray-800">
-                {categoryIcons[visibleCategory]} 
-                <span className="ml-2">{visibleCategory} Products</span>
-              </h2>
-            </div>
-            
-            {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
-                {filteredProducts.map(product => (
-                  <motion.div 
-                    key={product._id} 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    whileHover={{ y: -5 }}
-                  >
-                    <ProductCard 
-                      product={product} 
-                      categoryIcons={categoryIcons}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-blue-50 rounded-xl p-8 text-center">
-                <p className="text-lg text-blue-800">No products found in this category{searchQuery ? ` matching "${searchQuery}"` : ''}.</p>
-                <Button 
-                  onClick={() => {setSearchQuery(''); setVisibleCategory('All');}} 
-                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Reset Filters
-                </Button>
-              </div>
-            )}
-          </motion.div>
-        </motion.div>
-
         {/* Newsletter Section */}
         <motion.div
           className="mb-20 bg-gradient-to-r from-blue-700 to-indigo-900 rounded-3xl overflow-hidden shadow-2xl border border-blue-600/20"
@@ -1002,7 +1003,7 @@ or DM @gharpaluwa
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5 }}
                   viewport={{ once: true }}
-                  className="inline-block bg-yellow-500 text-blue-900 font-bold px-4 py-1 rounded-full mb-4"
+                  className="inline-block bg-yellow-500 text-white font-bold px-4 py-1 rounded-full mb-4"
                 >
                   STAY UPDATED
                 </motion.span>
@@ -1040,10 +1041,6 @@ or DM @gharpaluwa
                       className="pl-12 pr-6 py-4 rounded-full shadow-inner w-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300"
                     />
                     <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="4" width="20" height="16" rx="2" />
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                      </svg>
                     </div>
                   </div>
                   <Button 

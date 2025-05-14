@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "../components/ui/button";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext"; // Import toast hook
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
+// Import profile image
+import profileAvatar from "../Image/ai-generated-cute-dog-avatar-icon-clip-art-sticker-decoration-simple-background-free-photo.jpg";
 import { 
   UserCircle, 
   Package, 
@@ -86,6 +88,8 @@ export default function ProfilePage() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("orders");
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -152,20 +156,40 @@ export default function ProfilePage() {
     setShowLogoutDialog(false);
   };
 
-  const handleDeleteOrder = async (orderId) => {
-    if (!window.confirm("Are you sure you want to delete this order?")) return;
+  const confirmDeleteOrder = (orderId) => {
+    setOrderToDelete(orderId);
+    setShowDeleteDialog(true);
+  };
+
+  const cancelDeleteOrder = () => {
+    setOrderToDelete(null);
+    setShowDeleteDialog(false);
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return;
 
     try {
-      await axios.delete(`http://localhost:4001/api/orders/${orderId}`, {
+      await axios.delete(`http://localhost:4001/api/orders/${orderToDelete}`, {
         headers: {
           Authorization: `Bearer ${user.token}`
         }
       });
 
-      setOrders(orders.filter(order => order._id !== orderId));
+      setOrders(orders.filter(order => order._id !== orderToDelete));
+      addToast({
+        type: 'success',
+        message: 'Order deleted successfully'
+      });
+      setShowDeleteDialog(false);
+      setOrderToDelete(null);
     } catch (err) {
       console.error("Error deleting order:", err);
       setError(err.response?.data?.message || "Failed to delete order.");
+      addToast({
+        type: 'error',
+        message: err.response?.data?.message || "Failed to delete order."
+      });
     }
   };
 
@@ -201,8 +225,12 @@ export default function ProfilePage() {
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
                 
                 <div className="flex flex-col items-center py-4">
-                  <div className="h-24 w-24 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                    <UserCircle className="h-16 w-16 text-blue-600" />
+                  <div className="h-24 w-24 rounded-full mb-4 overflow-hidden border-4 border-blue-500">
+                    <img 
+                      src={profileAvatar} 
+                      alt="User Profile" 
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   
                   {user && (
@@ -257,7 +285,7 @@ export default function ProfilePage() {
                 <div className="space-y-2">
                   <Button 
                     variant="ghost" 
-                    className="w-full justify-start text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                    className="w-full justify-start text-gray-700 hover:text-white hover:bg-blue-500"
                     onClick={() => navigate("/shop")}
                   >
                     <Package className="mr-2 h-5 w-5" />
@@ -265,7 +293,7 @@ export default function ProfilePage() {
                   </Button>
                   <Button 
                     variant="ghost" 
-                    className="w-full justify-start text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                    className="w-full justify-start text-gray-700 hover:text-white hover:bg-blue-500"
                     onClick={() => navigate("/book-vaccination")}
                   >
                     <Syringe className="mr-2 h-5 w-5" />
@@ -326,7 +354,7 @@ export default function ProfilePage() {
                                 variant="ghost"
                                 size="sm"
                                 className="text-red-600 hover:bg-blue-200 hover:text-red-700"
-                                onClick={() => handleDeleteOrder(order._id)}
+                                onClick={() => confirmDeleteOrder(order._id)}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -504,6 +532,68 @@ export default function ProfilePage() {
             >
               <LogOut className="h-4 w-4 mr-2" />
               Logout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-500" />
+              Confirm Delete
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this order?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-row justify-end gap-2 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={cancelDeleteOrder}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteOrder}
+              className="flex items-center"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Order Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-500" />
+              Confirm Deletion
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this order? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-row justify-end gap-2 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={cancelDeleteOrder}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteOrder}
+              className="flex items-center"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Order
             </Button>
           </DialogFooter>
         </DialogContent>

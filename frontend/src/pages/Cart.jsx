@@ -8,7 +8,7 @@ import { useToast } from "../context/ToastContext"; // Updated to use ToastConte
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Cart() {
-  const { items, removeFromCart, total, addToCart, subtractFromCart } = useCart();
+  const { items, removeFromCart, total, addToCart, subtractFromCart, updateQuantity } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { addToast } = useToast(); // Using the same toast context as VaccinationCard
@@ -113,9 +113,9 @@ export default function Cart() {
                   <div className="hidden md:grid grid-cols-12 gap-4 text-sm font-medium text-gray-500 mb-4 px-4">
                     <div className="col-span-6">Product</div>
                     <div className="col-span-2 text-center">Quantity</div>
-                    <div className="col-span-2 text-right">Price</div>
                     <div className="col-span-2 text-right">Total</div>
                   </div>
+                  
 
                   {items.map((item) => (
                     <motion.div
@@ -165,43 +165,49 @@ export default function Cart() {
                             >
                               <Minus className="h-4 w-4" />
                             </motion.button>
-                            <span className="mx-3 font-medium text-gray-800">{item.quantity}</span>
-                            <motion.button
+                            <span className="mx-3 font-medium text-gray-800">{item.quantity}</span>                            <motion.button
                               onClick={() => {
-                                addToCart(item);
-                                addToast({
-                                  title: "Quantity Updated",
-                                  description: `${item.name} quantity increased.`,
-                                  duration: 2000,
-                                  type: 'info'
-                                });
+                                if (item.quantity < 5) {
+                                  // Increment quantity by exactly 1 instead of doubling
+                                  updateQuantity(item.id, item.quantity + 1);
+                                  addToast({
+                                    title: "Quantity Updated",
+                                    description: `${item.name} quantity increased.`,
+                                    duration: 2000,
+                                    type: 'info'
+                                  });
+                                } else {
+                                  addToast({
+                                    title: "Maximum Limit Reached",
+                                    description: `You can only add up to 5 of ${item.name}.`,
+                                    duration: 3000,
+                                    type: 'warning'
+                                  });
+                                }
                               }}
                               className="h-8 w-8 rounded-md bg-white text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center shadow-sm"
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
+                              disabled={item.quantity >= 5}
                             >
                               <Plus className="h-4 w-4" />
                             </motion.button>
                           </div>
                         </div>
 
-                        {/* Price */}
-                        <div className="col-span-3 md:col-span-2 text-right">
-                          <span className="text-gray-800">Rs {item.price.toFixed(2)}</span>
-                        </div>
 
                         {/* Total & Remove */}
                         <div className="col-span-4 md:col-span-2 text-right flex items-center justify-end">
-                          <span className="font-medium text-blue-600">Rs {(item.price * item.quantity).toFixed(2)}</span>
-                          <Button
+                          <span className="font-medium text-blue-600">Rs {(item.price * item.quantity).toFixed()}</span>
+                        </div>
+                         <div className="col-span-4 md:col-span-2 text-right flex items-center justify-end"><Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRemoveItem(item.id)}
                             className="ml-2 text-gray-400 hover:text-red-500 hover:bg-red-50"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                          </Button></div>
                       </div>
                     </motion.div>
                   ))}
