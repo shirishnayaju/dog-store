@@ -6,6 +6,9 @@ import Logo from "../Image/logo.jpg";
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
+import DashboardCharts from "../components/Dashboard/DashboardCharts";
+import DashboardSummary from "../components/Dashboard/DashboardSummary";
+import RecentActivities from "../components/Dashboard/RecentActivities";
 
 const Admin = () => {
   const { user, logout } = useAuth();
@@ -16,6 +19,7 @@ const Admin = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [chartsLoading, setChartsLoading] = useState(true);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -25,6 +29,17 @@ const Admin = () => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
+
+  // Simulate loading chart data
+  useEffect(() => {
+    if (location.pathname === "/admin") {
+      setChartsLoading(true);
+      const timer = setTimeout(() => {
+        setChartsLoading(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
 
   const confirmLogout = () => {
     setShowLogoutDialog(true);
@@ -206,24 +221,53 @@ const Admin = () => {
               
               {/* Action buttons could go here */}
             </div>
-          </div>
-
-          {/* Content Area */}
+          </div>          {/* Content Area */}
           <main className="flex-1 overflow-y-auto bg-gray-100 p-6">
             {/* Welcome Banner for Dashboard */}
             {location.pathname === "/admin" && (
-              <div className="mb-6 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg shadow-lg p-6 text-white">
-                <h1 className="text-3xl font-bold">
-                  Welcome Back, <span className="text-yellow-300">{user?.name || "Admin"}</span>
-                </h1>
-                <p className="mt-2 text-blue-100">
-                  Here's what's happening with your store today
-                </p>
-             </div>
+              <>
+                <div className="mb-6 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg shadow-lg p-6 text-white">
+                  <h1 className="text-3xl font-bold">
+                    Welcome Back, <span className="text-yellow-300">{user?.name || "Admin"}</span>
+                  </h1>
+                  <p className="mt-2 text-blue-100">
+                    Here's what's happening with your store today
+                  </p>
+                </div>                {/* Dashboard Components */}
+                <div className="mb-6">
+                  <DashboardSummary />
+                </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                  <div className="lg:col-span-2">
+                    {chartsLoading ? (
+                      <div className="bg-white p-6 rounded-lg shadow-md h-96 flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                        <p className="text-gray-500">Loading dashboard data...</p>
+                      </div>
+                    ) : (
+                      <DashboardCharts />
+                    )}
+                  </div>
+                  <div>
+                    {chartsLoading ? (
+                      <div className="bg-white p-6 rounded-lg shadow-md h-96 flex items-center justify-center">
+                        <div className="w-full space-y-3">
+                          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                          <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+                          <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+                          <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+                        </div>
+                      </div>
+                    ) : (
+                      <RecentActivities />
+                    )}
+                  </div>
+                </div>
+              </>
             )}
             
             {/* Main Content Area */}
-            <div className="bg-white rounded-lg shadow-lg">
+            <div className={`bg-white rounded-lg shadow-lg ${location.pathname === "/admin" ? "" : "p-6"}`}>
               <Outlet />
             </div>
           </main>

@@ -13,6 +13,7 @@ import emailRoutes from "./route/email.route.js";
 import paymentRoutes from "./route/payments.js";
 import dashboardRoutes from "./route/dashboard.route.js"; // New import
 import { subscriberRoutes } from "./route/subscriber.route.js"; // Updated import format
+import productNotificationRoutes from "./route/productNotification.route.js"; // Import product notification routes
 
 // Load environment variables
 dotenv.config();
@@ -56,6 +57,7 @@ app.use("/api", emailRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes); // New route added
 app.use('/api/newsletter', subscriberRoutes); // Added subscriber routes
+app.use('/api/notifications', productNotificationRoutes); // Added product notification routes
 
 // Default route
 app.get("/", (req, res) => {

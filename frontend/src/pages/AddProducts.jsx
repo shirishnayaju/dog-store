@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft, AlertCircle, Loader, Image as ImageIcon, CheckCircle, Package, RefreshCw } from 'lucide-react';
+import { Save, ArrowLeft, AlertCircle, Loader, Image as ImageIcon, CheckCircle, Package, RefreshCw, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../context/ToastContext'; // Import useToast
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
 
 const ProductForm = ({ isEditing = false }) => {
   const navigate = useNavigate();
@@ -26,6 +28,8 @@ const ProductForm = ({ isEditing = false }) => {
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showNotificationDialog, setShowNotificationDialog] = useState(false);
+  const [createdProductData, setCreatedProductData] = useState(null);
 
   // Predefined category options
   const categoryOptions = [
@@ -105,8 +109,7 @@ const ProductForm = ({ isEditing = false }) => {
     }
     
     return true;
-  };
-  const handleSubmit = async (e) => {
+  };  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitLoading(true);
     setError(null);
@@ -135,32 +138,32 @@ const ProductForm = ({ isEditing = false }) => {
       if (isEditing) {
         response = await axios.put(`${API_URL}/products/${id}`, payload);
         console.log("Update response:", response.data);
-      } else {
-        response = await axios.post(`${API_URL}/products`, payload);
-        console.log("Create response:", response.data);
-      }
+        
+        // Update products in AdminProducts.jsx by forcing a reload
+        window.dispatchEvent(new CustomEvent('productUpdated', { 
+          detail: { product: response.data } 
+        }));
 
-      // Update products in AdminProducts.jsx by forcing a reload
-      window.dispatchEvent(new CustomEvent('productUpdated', { 
-        detail: { product: response.data } 
-      }));
-
-      // Show success toast notification
-      addToast({
-        title: 'Success',
-        description: `Product ${isEditing ? 'updated' : 'added'} successfully!`,
-        type: 'success'
-      });
-      
-      // Reset form if adding a new product
-      if (!isEditing) {
-        setFormData(initialFormState);
-      } else {
+        // Show success toast notification
+        addToast({
+          title: 'Success',
+          description: `Product ${isEditing ? 'updated' : 'added'} successfully!`,
+          type: 'success'
+        });
+        
         // Navigate after successful edit
         setTimeout(() => {
           console.log("Navigating to products list after successful edit");
           navigate('/admin/products');
         }, 1500);
+      } else {
+        // For creating new products
+        response = await axios.post(`${API_URL}/products`, payload);
+        console.log("Create response:", response.data);
+        
+        // Store the created product data and show notification dialog
+        setCreatedProductData(response.data);
+        setShowNotificationDialog(true);
       }
     } catch (err) {
       const errorMessage = err.response?.data?.message || 
@@ -185,24 +188,89 @@ const ProductForm = ({ isEditing = false }) => {
         <p className="ml-3 font-medium text-gray-600">Loading product data...</p>
       </div>
     );
-  }
-
+  }  // Function to handle sending notification to all users
+  const handleSendNotification = async () => {
+    try {
+      setSubmitLoading(true);
+      
+      // Call the API to send notifications
+      const response = await axios.post(`${API_URL}/api/notifications/send-product-notification`, {
+        productData: createdProductData
+      });
+      
+      // Show success message
+      addToast({
+        title: 'Notification Sent',
+        description: `${response.data.recipients} users and subscribers have been notified about the new product "${createdProductData?.name}"!`,
+        type: 'success'
+      });
+      
+    } catch (error) {
+      // Handle error
+      const errorMessage = error.response?.data?.message || 'Failed to send notifications. Please try again.';
+      addToast({
+        title: 'Notification Error',
+        description: errorMessage,
+        type: 'error'
+      });
+      console.error('Notification error:', error.response?.data || error.message);
+    } finally {
+      setSubmitLoading(false);
+      
+      // Close the dialog
+      setShowNotificationDialog(false);
+      
+      // Update products list
+      window.dispatchEvent(new CustomEvent('productUpdated', { 
+        detail: { product: createdProductData } 
+      }));
+      
+      // Reset form after creating a new product
+      setFormData(initialFormState);
+    }
+  };
+    // Function to handle canceling notification and continuing
+  const handleSkipNotification = () => {
+    // Close the dialog
+    setShowNotificationDialog(false);
+    
+    // Update products list without sending notification
+    window.dispatchEvent(new CustomEvent('productUpdated', { 
+      detail: { product: createdProductData } 
+    }));
+    
+    // Show success toast notification
+    addToast({
+      title: 'Product Added',
+      description: 'Product added successfully without sending notifications.',
+      type: 'success'
+    });
+    
+    // Reset form after creating a new product
+    setFormData(initialFormState);
+    
+    // Navigate to products list after a delay
+    setTimeout(() => {
+      navigate('/admin/products');
+    }, 1000);
+  };
   return (
-    <div className="p-6">
-      {/* Title and actions row */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0 flex items-center">
-          <Package className="h-6 w-6 mr-3 text-blue-600" />
-          {isEditing ? 'Edit Product' : 'Add New Product'}
-        </h2>
-        <button
-          onClick={() => navigate('/admin/products')}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-        >
-          <ArrowLeft size={18} />
-          <span>Back to Products</span>
-        </button>
-      </div>
+    <>
+      <div className="p-6">
+        {/* Title and actions row */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0 flex items-center">
+            <Package className="h-6 w-6 mr-3 text-blue-600" />
+            {isEditing ? 'Edit Product' : 'Add New Product'}
+          </h2>
+          <button
+            onClick={() => navigate('/admin/products')}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-700 text-white border   hover:bg-amber-900 border-amber-800 transition-colors"
+          >
+            <ArrowLeft size={18} />
+            <span>Back to Products</span>
+          </button>
+        </div>
 
       {/* Error message (optional - can keep for inline errors) */}
       <AnimatePresence>
@@ -394,7 +462,7 @@ const ProductForm = ({ isEditing = false }) => {
             <button
               type="button"
               onClick={() => navigate('/admin/products')}
-              className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+              className="px-6 py-2.5 bg-amber-700 text-white border   hover:bg-amber-900 border-amber-800 transition-colors"
             >
               Cancel
             </button>
@@ -419,6 +487,82 @@ const ProductForm = ({ isEditing = false }) => {
         </form>
       </motion.div>
     </div>
+  
+  {/* Notification Dialog */}      <Dialog open={showNotificationDialog} onOpenChange={setShowNotificationDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-blue-500" />
+              Send Product Notification
+            </DialogTitle>
+            <DialogDescription>
+              Would you like to send a notification about this new product to all users and subscribers?
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-16 h-16 bg-white rounded border overflow-hidden">
+                {createdProductData?.image && (
+                  <img 
+                    src={createdProductData.image} 
+                    alt={createdProductData.name} 
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.target.src = 'https://placehold.co/150x150?text=Product';
+                    }}
+                  />
+                )}
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">{createdProductData?.name}</h3>
+                <p className="text-sm text-gray-500">{createdProductData?.category}</p>
+                <p className="text-sm font-medium text-blue-600">Rs {createdProductData?.price?.toFixed(2)}</p>
+              </div>
+            </div>
+            
+            <div className="text-sm text-gray-600 mt-2 border-t border-blue-100 pt-3">
+              <p className="mb-2">
+                <strong>What happens when you notify users:</strong>
+              </p>
+              <ul className="list-disc pl-5 space-y-1 text-xs">
+                <li>Email notifications will be sent to all registered users</li>
+                <li>Newsletter subscribers will also be notified</li>
+                <li>The notification will include product details and image</li>
+                <li>Users can click directly from the email to view the product</li>
+              </ul>
+            </div>
+          </div>
+            <DialogFooter className="flex flex-row justify-end gap-2 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={handleSkipNotification}
+              className="bg-amber-700 hover:bg-amber-700 border-amber-800"
+              disabled={submitLoading}
+            >
+              Skip
+            </Button>
+            <Button 
+              onClick={handleSendNotification}
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center"
+              disabled={submitLoading}
+            >
+              {submitLoading ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Bell className="h-4 w-4 mr-2" />
+                  Notify All Users
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

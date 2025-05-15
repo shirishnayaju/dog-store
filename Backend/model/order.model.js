@@ -9,21 +9,37 @@ const orderSchema = new mongoose.Schema({
     orderNotes: { type: String }
   },
   products: [{
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }, // Add reference to product
     name: { type: String, required: true },
     quantity: { type: Number, required: true },
     price: { type: Number, required: true }
   }],
-  total: { type: Number, required: true },
-  // Replace userId with email
+  totalAmount: { type: Number, required: true }, // Renamed for consistency
+  total: { type: Number, required: true }, // Keep for backward compatibility
+  // Add reference to user model
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   userEmail: {
     type: String,
     required: true
   },
   status: {
     type: String,
-    enum: ['Pending','Approved', 'Cancelled'],
-    default: 'Pending'
+    enum: ['pending', 'completed', 'cancelled', 'processing', 'refunded'],
+    default: 'pending'
   }
 }, { timestamps: true });
+
+// Pre-save hook to ensure total and totalAmount are in sync
+orderSchema.pre('save', function(next) {
+  if (this.total && !this.totalAmount) {
+    this.totalAmount = this.total;
+  } else if (this.totalAmount && !this.total) {
+    this.total = this.totalAmount;
+  }
+  next();
+});
 
 export const Order = mongoose.model('Order', orderSchema);
