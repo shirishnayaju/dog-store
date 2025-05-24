@@ -22,11 +22,9 @@ export default function ForgotPassword() {
     setMessage(null);
 
     try {
-      console.log("Sending OTP to:", data.email);
-
-      // API Endpoint (uses environment variable)
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4001/api";
-      const response = await axios.post(`${API_URL}/otp/send-otp`, { email: data.email });
+      console.log("Sending OTP to:", data.email);      // API Endpoint (uses environment variable)
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4001";
+      const response = await axios.post(`${API_URL}/api/otp/send-otp`, { email: data.email });
 
 
       console.log("OTP sent successfully:", response.data);

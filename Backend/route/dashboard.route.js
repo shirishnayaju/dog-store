@@ -3,7 +3,10 @@ import express from "express";
 import { 
   getDashboardStats, 
   getDashboardChartData,
-  getRecentActivities
+  getRecentActivities,
+  getProductAnalytics,
+  getCustomerAnalytics,
+  getVaccinationAnalytics
 } from "../controller/dashboard.controller.js";
 
 const router = express.Router();
@@ -16,5 +19,14 @@ router.get("/charts", getDashboardChartData);
 
 // Get recent activities
 router.get("/activities", getRecentActivities);
+
+// Get detailed product analytics
+router.get("/product-analytics", getProductAnalytics);
+
+// Get detailed customer analytics
+router.get("/customer-analytics", getCustomerAnalytics);
+
+// Get detailed vaccination analytics
+router.get("/vaccination-analytics", getVaccinationAnalytics);
 
 export default router;

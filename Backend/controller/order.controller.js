@@ -58,12 +58,12 @@ export const createOrder = async (req, res) => {
         message: 'Products must be a non-empty array'
       });
     }
-    
-    // Create a new order using email instead of userId
+      // Create a new order using email instead of userId
     const newOrder = new Order({
       customer,
       products,
       total,
+      totalAmount: total, // Add totalAmount here, using the same value as total
       userEmail,
     });
     
@@ -91,14 +91,13 @@ export const getOrderById = async (req, res) => {
 };
 
 // Update an order by ID
-export const updateOrder = async (req, res) => {
-  try {
+export const updateOrder = async (req, res) => {  try {
     const { customer, products, total, status } = req.body;
     
     // Find the order by ID and update it
     const updatedOrder = await Order.findByIdAndUpdate(
       req.params.id,
-      { customer, products, total, status },
+      { customer, products, total, totalAmount: total, status },
       { new: true } // Return the updated document
     );
     

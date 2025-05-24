@@ -29,15 +29,14 @@ export default function VerificationPending() {
   
   // API URL from environment variable
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4001";
-  
-  // Effect to handle initial OTP sending - runs only once on component mount
+    // Effect to handle initial OTP sending - runs only once on component mount
   useEffect(() => {
     // If we have email and OTP hasn't been sent yet, send it only once
     if (userData.email && !otpSent) {
       sendOTP(userData.email);
       setOtpSent(true);
     }
-  }, [userData.email, otpSent]); // Include otpSent in the dependency array
+  }, [userData.email, otpSent]); // Include otpSent in the dependency array to prevent multiple sends
   
   // Separate effect to handle the timer
   useEffect(() => {
@@ -54,12 +53,9 @@ export default function VerificationPending() {
     return () => {
       if (countdown) clearInterval(countdown);
     };
-  }, [timer]);
-  
-  const sendOTP = async (email) => {
+  }, [timer]);  const sendOTP = async (email) => {
     setIsSubmitting(true);
     setMessage(null);
-    
     try {
       console.log("Sending OTP to:", email);
       
@@ -115,16 +111,14 @@ export default function VerificationPending() {
       if (response.data.message && response.data.message.includes("successfully")) {
         // Once verified, complete the signup process
         try {
-          if (userData.method === 'email') {
-            console.log("Completing email signup for:", userData.email);
-            await axios.post("http://localhost:4001/user/signup", {
+          if (userData.method === 'email') {            console.log("Completing email signup for:", userData.email);
+            await axios.post(`${API_URL}/user/signup`, {
               name: userData.name,
               email: userData.email,
               password: userData.password
             });
-          } else if (userData.method === 'google') {
-            console.log("Completing Google signup with data:", userData.googleData);
-            await axios.post(`http://localhost:4001/user/auth/complete-google-signup`, {
+          } else if (userData.method === 'google') {            console.log("Completing Google signup with data:", userData.googleData);
+            await axios.post(`${API_URL}/user/auth/complete-google-signup`, {
               googleData: userData.googleData
             });
           }
@@ -172,10 +166,12 @@ export default function VerificationPending() {
     // Navigate to login page after closing the dialog
     navigate('/login');
   };
-  
-  const handleResendCode = async () => {
+    const handleResendCode = async () => {
     if (userData.email) {
+      // Reset otpSent before sending new OTP to ensure proper state tracking
+      setOtpSent(false);
       await sendOTP(userData.email);
+      setOtpSent(true);
     }
   };
   

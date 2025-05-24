@@ -2,6 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import userRoute from "./route/user.route.js";
 import productRoute from "./route/product.route.js";
 import createAdminAccount from "./controller/Admin.controller.js";
@@ -14,6 +16,7 @@ import paymentRoutes from "./route/payments.js";
 import dashboardRoutes from "./route/dashboard.route.js"; // New import
 import { subscriberRoutes } from "./route/subscriber.route.js"; // Updated import format
 import productNotificationRoutes from "./route/productNotification.route.js"; // Import product notification routes
+import uploadRoutes from "./route/upload.route.js"; // Import upload routes
 
 // Load environment variables
 dotenv.config();
@@ -46,6 +49,13 @@ mongoose.connection.on("error", (err) => {
   console.error("⚠️ MongoDB Error:", err);
 });
 
+// Get __dirname equivalent in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Routes
 app.use("/user", userRoute);
 app.use("/products", productRoute);
@@ -58,6 +68,7 @@ app.use('/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes); // New route added
 app.use('/api/newsletter', subscriberRoutes); // Added subscriber routes
 app.use('/api/notifications', productNotificationRoutes); // Added product notification routes
+app.use('/api/upload', uploadRoutes); // Added upload routes
 
 // Default route
 app.get("/", (req, res) => {

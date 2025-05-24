@@ -44,16 +44,15 @@ export default function Login() {
       setIsSubmitting(false);
     }
   };
-  
-  // Handle form submission
+    // Handle form submission
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     setLoginError(null);
     
     try {
-      console.log('Attempting login...');
+      console.log('Attempting login with:', { email: data.email, password: data.password ? '********' : 'undefined' });
       const response = await login(data.email, data.password);
-      console.log('Login function completed');
+      console.log('Login function completed successfully', response);
       
       // Show toast notification
       if (response?.showToast) {

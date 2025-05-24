@@ -22,10 +22,8 @@ export default function VerifyOtp() {
     try {
       // Use the email from location.state
       console.log("Verifying OTP for:", email);
-      console.log("Entered OTP:", data.otp);
-
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4001/api";
-      const response = await axios.post(`${API_URL}/otp/verify-otp`, {
+      console.log("Entered OTP:", data.otp);      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4001";
+      const response = await axios.post(`${API_URL}/api/otp/verify-otp`, {
         email: email, // Use the email from location.state
         otp: data.otp
       });

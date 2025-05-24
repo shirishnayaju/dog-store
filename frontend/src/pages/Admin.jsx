@@ -44,7 +44,6 @@ const Admin = () => {
   const confirmLogout = () => {
     setShowLogoutDialog(true);
   };
-
   const handleLogout = () => {
     const result = logout();
     
@@ -52,7 +51,11 @@ const Admin = () => {
       addToast(result.showToast);
     }
     
-    navigate('/home');
+    // Ensure redirect happens after state is cleared
+    setTimeout(() => {
+      navigate('/home');
+    }, 100);
+    
     setShowLogoutDialog(false);
   };
 

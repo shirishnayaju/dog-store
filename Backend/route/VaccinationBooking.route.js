@@ -6,7 +6,8 @@ import {
   updateVaccinationBooking,   
   deleteVaccinationBooking,   
   getVaccinationBookingsByUser,   
-  cancelVaccinationBooking 
+  cancelVaccinationBooking,
+  rescheduleVaccinationBooking
 } from '../controller/VaccinationBooking.controller.js';  
 
 const router = express.Router();  
@@ -31,5 +32,8 @@ router.get('/users/:userEmail/vaccinations', getVaccinationBookingsByUser);
 
 // Cancel a vaccination booking
 router.patch('/vaccinations/:id/cancel', cancelVaccinationBooking);  
+
+// Reschedule a vaccination booking
+router.patch('/vaccinations/:id/reschedule', rescheduleVaccinationBooking);
 
 export default router;

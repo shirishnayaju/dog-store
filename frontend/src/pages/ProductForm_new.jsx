@@ -19,6 +19,9 @@ const ProductForm = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadMethod, setUploadMethod] = useState('file'); // Add uploadMethod state
+  const [imageUrl, setImageUrl] = useState(''); // Add imageUrl state
+  const [imageLoading, setImageLoading] = useState(false); // Add imageLoading state
   
   // Predefined category options
   const categoryOptions = [
@@ -67,6 +70,8 @@ const ProductForm = () => {
           // Set image preview if an image URL exists
           if (product.image) {
             setImagePreview(product.image);
+            setImageUrl(product.image); // Set the imageUrl value
+            setUploadMethod('url'); // Default to URL method if product has an image
           }
         } catch (err) {
           console.error('Error fetching product:', err);
@@ -93,7 +98,6 @@ const ProductForm = () => {
       [name]: value
     });
   };
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -102,6 +106,12 @@ const ProductForm = () => {
       // Create preview URL for the selected image
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
+      
+      // Switch to file upload mode if not already
+      setUploadMethod('file');
+      
+      // Reset URL input when file is selected
+      setImageUrl('');
     }
   };
 
@@ -160,14 +170,46 @@ const ProductForm = () => {
         recommendedFor: recommendedForArray,
         details: detailsArray
       };
-      
-      // If we have an image URL from edit mode and no new file, use the existing URL
-      if (isEditMode && imagePreview && !imagePreview.startsWith('blob:') && !imageFile) {
+        // Handle image URL or file upload based on selected method
+      if (uploadMethod === 'url' && imageUrl) {
+        // Use the direct URL provided by user
+        payload.image = imageUrl;
+      } 
+      else if (uploadMethod === 'file' && imageFile) {
+        // Upload the image file to the server
+        setImageLoading(true);
+        try {
+          const formData = new FormData();
+          formData.append('image', imageFile);
+          
+          const uploadResponse = await axios.post(`${API_BASE_URL}/api/upload/product-image`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+          
+          // Get the uploaded image URL and use it
+          payload.image = uploadResponse.data.imageUrl;
+          console.log('Image uploaded successfully:', payload.image);
+          
+        } catch (uploadError) {
+          console.error('Image upload error:', uploadError);
+          addToast({
+            title: 'Upload Failed',
+            description: uploadError.response?.data?.message || 'Failed to upload image. Please try again.',
+            type: 'error'
+          });
+          throw uploadError; // Re-throw to stop the submission
+        } finally {
+          setImageLoading(false);
+        }
+      }
+      else if (isEditMode && imagePreview && !imagePreview.startsWith('blob:')) {
+        // Use existing image URL for edit mode when no new image is selected
         payload.image = imagePreview;
       } else {
-        // This is where you'd normally handle file uploads
-        // For now, we're just using direct URLs
-        payload.image = imagePreview || '';
+        // No image selected, set empty string or default placeholder
+        payload.image = '';
       }
       
       console.log(`Submitting to: ${API_BASE_URL}/products${isEditMode ? `/${id}` : ''}`);
@@ -214,7 +256,6 @@ const ProductForm = () => {
       setSubmitting(false);
     }
   };
-
   // Clean up the object URL when component unmounts or when a new file is selected
   useEffect(() => {
     return () => {
@@ -223,6 +264,13 @@ const ProductForm = () => {
       }
     };
   }, [imagePreview]);
+  
+  // Update imagePreview when imageUrl changes (for URL upload method)
+  useEffect(() => {
+    if (uploadMethod === 'url') {
+      setImagePreview(imageUrl);
+    }
+  }, [imageUrl, uploadMethod]);
 
   if (loading) {
     return (
@@ -276,8 +324,7 @@ const ProductForm = () => {
         className="bg-white rounded-lg shadow-sm border overflow-hidden"
       >
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Image Upload */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">            {/* Image Upload */}
             <div className="col-span-1 md:col-span-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 <div className="flex items-center gap-2 mb-2">
@@ -285,30 +332,102 @@ const ProductForm = () => {
                   <span>Product Image*</span>
                 </div>
               </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors cursor-pointer">
-                <input
-                  type="file"
-                  id="image"
-                  name="image"
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  className="hidden"
-                  required={!isEditMode && !imagePreview}
-                />
-                <label htmlFor="image" className="cursor-pointer flex flex-col items-center">
-                  {imagePreview ? (
-                    <div className="flex flex-col items-center">
-                      <img src={imagePreview} alt="Preview" className="h-40 w-auto object-contain mb-2" />
-                      <p className="text-sm text-blue-600 font-medium mt-2">Change image</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center">
-                      <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
-                      <p className="text-gray-500 font-medium">Upload product image</p>
-                      <p className="text-xs text-gray-400 mt-1">JPG, PNG, or GIF up to 5MB</p>
+              
+              {/* Upload Method Toggle with improved styling */}
+              <div className="flex mb-4 border border-gray-300 rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setUploadMethod('url')}
+                  className={`flex-1 px-4 py-2.5 text-sm font-medium ${
+                    uploadMethod === 'url' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  } transition-all duration-200`}
+                >
+                  Enter URL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUploadMethod('file')}
+                  className={`flex-1 px-4 py-2.5 text-sm font-medium ${
+                    uploadMethod === 'file' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  } transition-all duration-200`}
+                >
+                  Upload Image
+                </button>
+              </div>
+              
+              {/* Conditional Content Based on Upload Method */}
+              {uploadMethod === 'url' ? (
+                <div>
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => {
+                      setImageUrl(e.target.value);
+                      setImagePreview(e.target.value);
+                    }}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                  {imageUrl && (
+                    <div className="mt-4 flex flex-col items-center bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                      <div className="w-full h-48 overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center">
+                        <img
+                          src={imageUrl}
+                          alt="Preview"
+                          className="max-w-full max-h-full object-contain"
+                          onError={(e) => {
+                            e.target.src = 'https://placehold.co/150x150?text=Invalid+URL';
+                          }}
+                        />
+                      </div>
+                      <div className="text-sm text-gray-500 mt-3 text-center">
+                        <p className="font-medium mb-1">Image Preview</p>
+                        <p className="text-xs opacity-75">Make sure your image URL is valid and accessible</p>
+                      </div>
                     </div>
                   )}
-                </label>
+                </div>
+              ) : (
+                <div>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors cursor-pointer">
+                    <input
+                      type="file"
+                      id="image"
+                      name="image"
+                      onChange={handleImageChange}
+                      accept="image/*"
+                      className="hidden"
+                      required={!isEditMode && !imagePreview}
+                    />
+                    <label htmlFor="image" className="cursor-pointer flex flex-col items-center">
+                      {imagePreview && imagePreview.startsWith('blob:') ? (
+                        <div className="flex flex-col items-center">
+                          <img src={imagePreview} alt="Preview" className="h-40 w-auto object-contain mb-2" />
+                          <p className="text-sm text-blue-600 font-medium mt-2">Change image</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center">
+                          <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
+                          <p className="text-gray-500 font-medium">Upload product image</p>
+                          <p className="text-xs text-gray-400 mt-1">JPG, PNG, or GIF up to 5MB</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                  {imagePreview && imagePreview.startsWith('blob:') && (
+                    <div className="mt-4 flex justify-center">
+                      <p className="text-sm text-gray-600">Image ready for upload. Click "Submit" to save changes.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100 text-xs text-blue-700">
+                <strong>Pro Tip:</strong> For the best appearance, use square images with a minimum resolution of 500x500 pixels.
               </div>
             </div>
 
@@ -440,16 +559,15 @@ const ProductForm = () => {
               className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
             >
               Cancel
-            </button>
-            <button
+            </button>            <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || imageLoading}
               className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 shadow-sm"
             >
-              {submitting ? (
+              {submitting || imageLoading ? (
                 <>
                   <Loader className="animate-spin h-5 w-5" />
-                  <span>Processing...</span>
+                  <span>{imageLoading ? 'Uploading Image...' : 'Processing...'}</span>
                 </>
               ) : (
                 <>

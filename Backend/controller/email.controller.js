@@ -43,7 +43,7 @@ export const sendVaccinationStatusEmail = async (req, res) => {
     // Company logo and brand header
     const logoHtml = `
       <div style="text-align: center; margin-bottom: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 5px 5px 0 0;">
-        <img src="https://scontent.fktm21-2.fna.fbcdn.net/v/t39.30808-6/299602768_486726786790155_4876935833175453117_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=ytDg_olhTFcQ7kNvwGKXe6y&_nc_oc=Adm6CM1oL1K2Vo39kD-YK0u7zmVnP0qTRio7C8uxESXwveen6xCIiA36-935tTxJd0yw7EAXty_fIgZn4wWzSlFQ&_nc_zt=23&_nc_ht=scontent.fktm21-2.fna&_nc_gid=4xm9OkBeERVxS1S5cgPtMw&oh=00_AfE_noDDL3f8lQHBErPeibuKHRpfp7qWBbFU0IWjT2IjLw&oe=67F9E2DA" alt="GharPaluwa Logo" style="max-width: 120px; height: auto;" />
+<img src="https://th.bing.com/th/id/OIP.MzeiYaPtRAUpb7-SabBPZQHaHa?cb=iwp2&rs=1&pid=ImgDetMain" alt="GharPaluwa Logo" style="max-width: 60px; height:60px;" />
         <h2 style="color: #3b82f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin-top: 15px; margin-bottom: 0;">GharPaluwa</h2>
         <p style="color: #6b7280; margin-top: 5px; font-style: italic;">Premium Pet Care Services</p>
       </div>

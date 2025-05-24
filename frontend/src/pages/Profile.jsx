@@ -9,6 +9,7 @@ import { useToast } from "../context/ToastContext"; // Import toast hook
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
 // Import profile image
 import profileAvatar from "../Image/ai-generated-cute-dog-avatar-icon-clip-art-sticker-decoration-simple-background-free-photo.jpg";
+import qrCode from "../Image/QR Code.png"; // Import QR code image
 import { 
   UserCircle, 
   Package, 
@@ -28,7 +29,9 @@ import {
   ShoppingBag,
   AlertCircle,
   Check,
-  Trash2
+  Trash2,
+  RefreshCw,
+  X
 } from 'lucide-react';
 
 const formatDate = (dateString) => {
@@ -90,6 +93,7 @@ export default function ProfilePage() {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
+  const [cancellingBooking, setCancellingBooking] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -190,6 +194,45 @@ export default function ProfilePage() {
         type: 'error',
         message: err.response?.data?.message || "Failed to delete order."
       });
+    }
+  };
+
+  // Handle cancellation of a vaccination booking
+  const handleCancelBooking = async (bookingId) => {
+    if (!bookingId) return;
+    
+    setCancellingBooking(bookingId);
+    
+    try {
+      const response = await axios.patch(
+        `http://localhost:4001/api/vaccinations/${bookingId}/cancel`,
+        {},
+        { 
+          headers: { 
+            Authorization: `Bearer ${user.token}` 
+          } 
+        }
+      );
+      
+      // Update the vaccination booking in the list
+      setVaccinations(vaccinations.map(booking => 
+        booking._id === bookingId ? response.data : booking
+      ));
+      
+      addToast({
+        type: 'success',
+        title: 'Appointment Cancelled',
+        description: 'Your vaccination appointment has been successfully cancelled.'
+      });
+    } catch (err) {
+      console.error("Error cancelling booking:", err);
+      addToast({
+        type: 'error',
+        title: 'Cancellation Failed',
+        description: err.response?.data?.message || "Failed to cancel appointment"
+      });
+    } finally {
+      setCancellingBooking(null);
     }
   };
 
@@ -299,6 +342,23 @@ export default function ProfilePage() {
                     <Syringe className="mr-2 h-5 w-5" />
                     Book Vaccination
                   </Button>
+                </div>
+              </div>
+              
+              {/* QR Code Section */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Connect With Us</h2>
+                <div className="flex flex-col items-center">
+                  <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 mb-3">
+                    <img 
+                      src={qrCode} 
+                      alt="GharPaluwa QR Code" 
+                      className="w-40 h-40 object-contain"
+                    />
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">
+                    Scan this QR code to connect with us on social media and get exclusive offers!
+                  </p>
                 </div>
               </div>
             </div>
@@ -471,17 +531,64 @@ export default function ProfilePage() {
                                 </div>
                               </div>
                             </div>
-                          </div>
-
-                          <div className="mt-4 flex justify-end">
+                          </div>                          <div className="mt-4 flex justify-end">
                             <Button
                               variant="outline"
-                              className=" hover:bg-blue-800 border-blue-200 flex items-center"
+                              className="hover:bg-blue-800 border-blue-200 flex items-center mr-2"
                               onClick={() => navigate("/MyBookings", { state: { bookingId: booking._id } })}
                             >
                               View details
                               <ChevronRight className="w-4 h-4 ml-1" />
                             </Button>
+                            {/* Only show reschedule and cancel buttons for "Scheduled" status */}
+                            {booking.status === 'Scheduled' && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  className="bg-purple-600 text-white hover:bg-purple-700 flex items-center mr-2"
+                                  onClick={() => {
+                                    navigate("/MyBookings", { state: { bookingId: booking._id, openReschedule: true } });
+                                    addToast({
+                                      type: 'info',
+                                      title: 'Reschedule Appointment',
+                                      description: 'Please select a new date and time for your appointment'
+                                    });
+                                  }}
+                                >
+                                  <RefreshCw className="w-4 h-4 mr-1" />
+                                  Reschedule
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  className="bg-red-600 text-white hover:bg-red-700 flex items-center"
+                                  onClick={() => handleCancelBooking(booking._id)}
+                                  disabled={cancellingBooking === booking._id}
+                                >
+                                  {cancellingBooking === booking._id ? (
+                                    <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin mr-1"></div>
+                                  ) : (
+                                    <X className="w-4 h-4 mr-1" />
+                                  )}
+                                  Cancel
+                                </Button>
+                              </>
+                            )}
+                            {/* Only show cancel button for "Confirmed" status */}
+                            {booking.status === 'Confirmed' && (
+                              <Button
+                                variant="outline"
+                                className="bg-red-600 text-white hover:bg-red-700 flex items-center"
+                                onClick={() => handleCancelBooking(booking._id)}
+                                disabled={cancellingBooking === booking._id}
+                              >
+                                {cancellingBooking === booking._id ? (
+                                  <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin mr-1"></div>
+                                ) : (
+                                  <X className="w-4 h-4 mr-1" />
+                                )}
+                                Cancel
+                              </Button>
+                            )}
                           </div>
                         </div>
                       ))}

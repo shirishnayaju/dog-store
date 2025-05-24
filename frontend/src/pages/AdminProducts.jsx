@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { Edit, Trash2, Search, PlusCircle, Filter, ArrowUpDown, Eye, RefreshCw, Package } from 'lucide-react';
+import { Edit, Trash2, Search, PlusCircle, Filter, ArrowUpDown, Eye, RefreshCw, Package, Image as ImageIcon, Save, Loader, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../context/ToastContext'; // Import useToast
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
 
 const AdminProducts = () => {
   const navigate = useNavigate();
@@ -15,9 +16,17 @@ const AdminProducts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [sortField, setSortField] = useState('name');
-  const [sortDirection, setSortDirection] = useState('asc');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [sortDirection, setSortDirection] = useState('asc');  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  
+  // Image editing states
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState(null);
+  const [uploadMethod, setUploadMethod] = useState('url');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
 
   // Category options
   const categoryOptions = [
@@ -177,7 +186,6 @@ const AdminProducts = () => {
       });
     }
   };
-
   // Reset filters
   const resetFilters = () => {
     setSearchTerm('');
@@ -185,6 +193,165 @@ const AdminProducts = () => {
     setSortField('name');
     setSortDirection('asc');
   };
+
+  // Open image edit modal
+  const openImageModal = (product) => {
+    setCurrentProduct(product);
+    setShowImageModal(true);
+    setImageUrl(product.image || '');
+    setImagePreview(product.image || null);
+    setUploadMethod(product.image ? 'url' : 'file');
+  };
+
+  // Handle image file selection
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      
+      // Create preview URL for the selected image
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      
+      // Reset URL input when file is selected
+      setImageUrl('');
+    }
+  };
+
+  // Upload image to server
+  const handleUploadImage = async () => {
+    if (!imageFile) {
+      addToast({
+        title: 'Error',
+        description: 'Please select an image file first',
+        type: 'error'
+      });
+      return;
+    }
+    
+    setImageLoading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      
+      const response = await axios.post(`${API_URL}/api/upload/product-image`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      setImageUrl(response.data.imageUrl);
+      
+      addToast({
+        title: 'Success',
+        description: 'Image uploaded successfully!',
+        type: 'success'
+      });
+      
+    } catch (err) {
+      console.error('Image upload error:', err);
+      addToast({
+        title: 'Upload Failed',
+        description: err.response?.data?.message || 'Failed to upload image. Please try again.',
+        type: 'error'
+      });
+    } finally {
+      setImageLoading(false);
+    }
+  };
+  // Update product with new image
+  const handleUpdateImage = async () => {
+    if (!currentProduct) return;
+    
+    // Validate we have an image URL or file
+    if (!imageUrl && uploadMethod === 'url') {
+      addToast({
+        title: 'Error',
+        description: 'Please enter an image URL',
+        type: 'error'
+      });
+      return;
+    }
+
+    if (!imageUrl && !imageFile && uploadMethod === 'file') {
+      addToast({
+        title: 'Error',
+        description: 'Please select an image file first',
+        type: 'error'
+      });
+      return;
+    }
+    
+    setImageLoading(true);
+    
+    try {
+      let finalImageUrl = imageUrl;
+      
+      // If using file upload, upload it automatically
+      if (uploadMethod === 'file' && imageFile) {
+        // Create a FormData instance for uploading
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        
+        const uploadResponse = await axios.post(`${API_URL}/api/upload/product-image`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        // Get the uploaded image URL 
+        finalImageUrl = uploadResponse.data.imageUrl;
+        console.log('Image uploaded successfully:', finalImageUrl);
+      }      
+      // Update the product with the new image URL
+      const response = await axios.put(`${API_URL}/products/${currentProduct._id}`, {
+        ...currentProduct,
+        image: finalImageUrl
+      });
+      
+      // Update the products list
+      setProducts(prevProducts => 
+        prevProducts.map(p => 
+          p._id === currentProduct._id ? {...p, image: finalImageUrl} : p
+        )
+      );
+      
+      addToast({
+        title: 'Success',
+        description: 'Product image updated successfully!',
+        type: 'success'
+      });
+      
+      // Close the modal
+      setShowImageModal(false);
+      
+      // Reset states
+      setCurrentProduct(null);
+      setImageFile(null);
+      setImagePreview(null);
+      setImageUrl('');
+      
+    } catch (err) {
+      console.error('Image update error:', err);
+      addToast({
+        title: 'Update Failed',
+        description: err.response?.data?.message || 'Failed to update product image. Please try again.',
+        type: 'error'
+      });
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  // Clean up object URLs when component unmounts or modal closes
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   if (loading) {
     return (
@@ -363,8 +530,7 @@ const AdminProducts = () => {
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
                       Rs {product.price.toFixed(2)}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
+                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">                      <div className="flex items-center justify-end space-x-2">
                         <Link 
                           to={`/products/${product._id}`} 
                           target="_blank"
@@ -373,6 +539,13 @@ const AdminProducts = () => {
                         >
                           <Eye className="h-5 w-5" />
                         </Link>
+                        <button
+                          onClick={() => openImageModal(product)}
+                          className="p-1.5 rounded-md text-gray-500 hover:bg-blue-100 hover:text-blue-600"
+                          title="Edit Image"
+                        >
+                          <ImageIcon className="h-5 w-5" />
+                        </button>
                         <Link 
                           to={`/admin/products/edit/${product._id}`}
                           className="p-1.5 rounded-md text-gray-500 hover:bg-blue-100 hover:text-blue-600"
@@ -421,9 +594,7 @@ const AdminProducts = () => {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Delete confirmation modal */}
+      </div>      {/* Delete confirmation modal */}
       <AnimatePresence>
         {showDeleteConfirm && productToDelete && (
           <motion.div
@@ -462,6 +633,182 @@ const AdminProducts = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Image edit modal */}
+      <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
+        <DialogContent className="sm:max-w-md rounded-xl p-0 overflow-hidden">
+          <DialogHeader className="p-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <ImageIcon className="h-5 w-5 text-white" />
+              Edit Product Image
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="p-6">
+            {currentProduct && (
+              <>
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="h-12 w-12 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
+                    {currentProduct.image ? (
+                      <img 
+                        src={currentProduct.image} 
+                        alt={currentProduct.name} 
+                        className="h-12 w-12 object-cover"
+                        onError={(e) => {
+                          e.target.src = 'https://placehold.co/40x40?text=NA';
+                        }}
+                      />
+                    ) : (
+                      <div className="h-12 w-12 flex items-center justify-center text-gray-500">N/A</div>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{currentProduct.name}</h3>
+                    <p className="text-xs text-gray-500">{currentProduct.category}</p>
+                  </div>
+                </div>
+                
+                {/* Upload Method Toggle */}
+                <div className="flex mb-4 border border-gray-300 rounded-lg overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUploadMethod('url');
+                      if (imageUrl) {
+                        setImagePreview(imageUrl);
+                      }
+                    }}
+                    className={`flex-1 px-4 py-2.5 text-sm font-medium ${
+                      uploadMethod === 'url' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                    } transition-all duration-200`}
+                  >
+                    Enter URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUploadMethod('file');
+                      if (!imageFile && !imagePreview?.startsWith('blob:')) {
+                        setImagePreview(null);
+                      }
+                    }}
+                    className={`flex-1 px-4 py-2.5 text-sm font-medium ${
+                      uploadMethod === 'file' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                    } transition-all duration-200`}
+                  >
+                    Upload Image
+                  </button>
+                </div>
+                
+                {/* Conditional Content Based on Upload Method */}
+                {uploadMethod === 'url' ? (
+                  <div>
+                    <input
+                      type="url"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      placeholder="https://example.com/image.jpg"
+                    />
+                    {imageUrl && (
+                      <div className="mt-4 flex flex-col items-center bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                        <div className="w-full h-48 overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center">
+                          <img
+                            src={imageUrl}
+                            alt="Preview"
+                            className="max-w-full max-h-full object-contain"
+                            onError={(e) => {
+                              e.target.src = 'https://placehold.co/150x150?text=Invalid+URL';
+                            }}
+                          />
+                        </div>
+                        <div className="text-sm text-gray-500 mt-3 text-center">
+                          <p className="font-medium mb-1">Image Preview</p>
+                          <p className="text-xs opacity-75">Make sure your image URL is valid and accessible</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors bg-white">
+                      <input
+                        type="file"
+                        id="imageFile"
+                        name="imageFile"
+                        onChange={handleImageChange}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      <label htmlFor="imageFile" className="cursor-pointer flex flex-col items-center">
+                        {imagePreview ? (
+                          <div className="flex flex-col items-center">
+                            <div className="w-full h-48 overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center mb-3">
+                              <img src={imagePreview} alt="Preview" className="max-w-full max-h-full object-contain" />
+                            </div>
+                            <p className="text-sm text-blue-600 font-medium mt-2 py-1 px-3 bg-blue-50 rounded-full">Change image</p>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center py-8">
+                            <div className="w-16 h-16 flex items-center justify-center rounded-full bg-blue-50 mb-4">
+                              <ImageIcon className="h-8 w-8 text-blue-500" />
+                            </div>
+                            <p className="text-gray-700 font-medium">Upload product image</p>
+                            <p className="text-xs text-gray-500 mt-1">JPG, PNG, or GIF up to 5MB</p>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                      {imagePreview && imagePreview.startsWith('blob:') && (
+                      <div className="mt-4 flex justify-center">
+                        <p className="text-sm text-gray-600">Image ready for update. Click "Update Image" to save changes.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100 text-xs text-blue-700">
+                  <strong>Pro Tip:</strong> For the best appearance, use square images with a minimum resolution of 500x500 pixels.
+                </div>
+              </>
+            )}
+          </div>
+          
+          <DialogFooter className="bg-gray-50 p-6 border-t border-gray-200">
+            <div className="flex flex-row justify-end gap-3 w-full">
+              <button
+                type="button"
+                onClick={() => setShowImageModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleUpdateImage}
+                disabled={imageLoading}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              >
+                {imageLoading ? (
+                  <>
+                    <Loader className="h-4 w-4 animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>Update Image</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

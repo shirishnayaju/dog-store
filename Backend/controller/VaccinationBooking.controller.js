@@ -229,11 +229,10 @@ export const cancelVaccinationBooking = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: 'Vaccination booking not found' });
     }
-    
-    // Only allow cancellation of scheduled bookings
+      // Only allow cancellation of scheduled bookings
     if (booking.status !== 'Scheduled' && booking.status !== 'Confirmed') {
       return res.status(400).json({ 
-        message: `Cannot cancel a booking that is already ${booking.status}`
+        message: `Cannot cancel a booking that is ${booking.status}. Only 'Scheduled' or 'Confirmed' bookings can be cancelled.`
       });
     }
     
@@ -246,5 +245,67 @@ export const cancelVaccinationBooking = async (req, res) => {
     res.status(200).json(updatedBooking);
   } catch (error) {
     res.status(500).json({ message: 'Error cancelling vaccination booking', error: error.message });
+  }
+};
+
+// Reschedule a vaccination booking
+export const rescheduleVaccinationBooking = async (req, res) => {
+  try {
+    const { appointmentDate, appointmentTime, vaccinationCenter } = req.body;
+    
+    // Validate required fields
+    if (!appointmentDate || !appointmentTime || !vaccinationCenter) {
+      return res.status(400).json({ 
+        message: 'Missing required fields for rescheduling',
+        missingFields: [
+          ...(!appointmentDate ? ['appointmentDate'] : []),
+          ...(!appointmentTime ? ['appointmentTime'] : []),
+          ...(!vaccinationCenter ? ['vaccinationCenter'] : [])
+        ]
+      });
+    }
+      // First find the booking to check if it exists
+    const booking = await VaccinationBooking.findById(req.params.id);
+    
+    if (!booking) {
+      return res.status(404).json({ message: 'Vaccination booking not found' });
+    }
+    
+    // Only allow rescheduling of scheduled bookings
+    if (booking.status !== 'Scheduled') {
+      return res.status(400).json({ 
+        message: `Cannot reschedule a booking that is ${booking.status}. Only 'Scheduled' bookings can be rescheduled.`
+      });
+    }
+    
+    // Check for conflicting appointments
+    const conflictingBooking = await VaccinationBooking.findOne({
+      _id: { $ne: req.params.id }, // Exclude current booking
+      appointmentDate,
+      appointmentTime,
+      vaccinationCenter,
+      status: 'Scheduled'
+    });
+    
+    if (conflictingBooking) {
+      return res.status(400).json({
+        message: 'This time slot is already booked. Please select another time.'
+      });
+    }
+    
+    // Update the booking with new appointment details
+    const updatedBooking = await VaccinationBooking.findByIdAndUpdate(
+      req.params.id,
+      { 
+        appointmentDate, 
+        appointmentTime, 
+        vaccinationCenter 
+      },
+      { new: true, runValidators: true }
+    );
+    
+    res.status(200).json(updatedBooking);
+  } catch (error) {
+    res.status(500).json({ message: 'Error rescheduling vaccination booking', error: error.message });
   }
 };

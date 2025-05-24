@@ -76,10 +76,20 @@ export function AuthProvider({ children }) {
       }
     };
   }, []);
-
   // Login function - using useCallback to maintain reference stability
   const login = useCallback(async (email, password) => {
     try {
+      // Validate inputs before sending request
+      if (!email) {
+        throw new Error("Email is required");
+      }
+      
+      if (!password) {
+        throw new Error("Password is required");
+      }
+
+      console.log("Sending login request to backend with email:", email);
+      
       const response = await axios.post("http://localhost:4001/user/login", {
         email,
         password,
@@ -112,17 +122,37 @@ export function AuthProvider({ children }) {
         description: `Welcome back, ${userData.name}!`, 
         type: "success",
         duration: 3000
-      }};
-    } catch (error) {
+      }};    } catch (error) {
       console.error("Login Error:", error);
-
-      if (error.response?.data?.message === "Incorrect password") {
-        throw new Error("Incorrect password. Please try again.");
-      } else if (error.response?.data?.message === "User not found") {
-        throw new Error("User not found. Please check your email.");
+      
+      // Log detailed error information
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        console.error("Response headers:", error.response.headers);
+        
+        if (error.response.status === 400) {
+          if (error.response.data.message === "Email and password are required") {
+            throw new Error("Email and password are required. Please fill in all fields.");
+          } else if (error.response.data.message === "Invalid credentials") {
+            throw new Error("Invalid email or password. Please try again.");
+          } else {
+            throw new Error(error.response.data.message || "Invalid request. Please check your inputs.");
+          }
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("No response received:", error.request);
+        throw new Error("No response from server. Please try again later.");
       } else {
-        throw new Error("Login failed. Please try again later.");
+        // Something happened in setting up the request that triggered an Error
+        console.error("Request setup error:", error.message);
       }
+      
+      // Default error message
+      throw new Error(error.message || "Login failed. Please try again later.");
     }
   }, []);
 
@@ -281,7 +311,8 @@ export function AuthProvider({ children }) {
 
   return (
     <GoogleOAuthProvider 
-      clientId="520016725734-7mq3cl77tq37cm20tqss1j99q8kfrtoa.apps.googleusercontent.com"
+      clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "520016725734-7mq3cl77tq37cm20tqss1j99q8kfrtoa.apps.googleusercontent.com"}
+      onScriptLoadSuccess={() => console.log("Google OAuth script loaded successfully")}
       onScriptLoadError={(error) => console.error("Google script load error:", error)}
       onError={(error) => {
         console.error("Google OAuth error:", error);

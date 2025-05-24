@@ -789,19 +789,6 @@ export default function BookingConfirm() {
                 whileTap={{ scale: 0.97 }}
               >
                 <Button 
-                  onClick={() => window.print()}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Print Confirmation
-                </Button>
-              </motion.div>
-              
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <Button 
                   onClick={shareAppointment}
                   className="w-full bg-amber-500 hover:bg-amber-600 flex items-center justify-center"
                 >
@@ -835,33 +822,27 @@ export default function BookingConfirm() {
             <div className="bg-indigo-500 px-6 py-4">
               <h2 className="text-xl font-semibold text-white flex items-center">
                 <Check className="h-5 w-5 mr-2" />
-                Booking Reference
+                For Our Contacts
               </h2>
             </div>
-            
-            <div className="p-6 flex flex-col items-center">
-              {/* Placeholder QR code */}
-              <div className="h-32 w-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <rect x="10" y="10" width="30" height="30" fill="#4F46E5" />
-                  <rect x="60" y="10" width="30" height="30" fill="#4F46E5" />
-                  <rect x="10" y="60" width="30" height="30" fill="#4F46E5" />
-                  <rect x="60" y="60" width="10" height="10" fill="#4F46E5" />
-                  <rect x="80" y="60" width="10" height="10" fill="#4F46E5" />
-                  <rect x="60" y="80" width="10" height="10" fill="#4F46E5" />
-                  <rect x="80" y="80" width="10" height="10" fill="#4F46E5" />
-                  <rect x="45" y="45" width="10" height="10" fill="#4F46E5" />
-                </svg>
+              <div className="p-6 flex flex-col items-center">
+              {/* QR code image */}
+              <div className="h-40 w-40 rounded-lg flex items-center justify-center overflow-hidden">
+                <img 
+                  src="../src/Image/QR Code.png" 
+                  alt="QR Code" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               
               <div className="mt-4 text-center">
-                <p className="text-sm text-gray-500">Booking Reference</p>
+                <p className="text-sm text-gray-500">Our Contacts</p>
                 <p className="font-bold text-indigo-600 text-xl mt-1">
                   {/* Generate a fake booking reference */}
                   {`VX${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`}
                 </p>
                 <p className="text-xs text-gray-500 mt-2">
-                  Show this QR code when you arrive at the center
+                  For our contacts, scan this QR code
                 </p>
               </div>
             </div>

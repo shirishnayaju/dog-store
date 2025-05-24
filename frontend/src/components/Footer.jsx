@@ -1,5 +1,6 @@
 import React from 'react';
 import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import qrCode from "../Image/QR Code.png"; // Import QR code image
 
 export default function Footer() {
   return (
@@ -10,9 +11,8 @@ export default function Footer() {
           <h2 className="text-3xl font-bold mb-2 ">GHARPALUWA</h2>
           <p className="text-white text-center max-w-md">Your one-stop shop for premium dog products and services</p>
         </div>
-        
-        {/* Main footer content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {/* Main footer content */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* About section */}
           <div className="flex flex-col items-center md:items-start">
             <h3 className="text-lg font-semibold mb-4 border-b-2 border-blue-500 pb-2">About Us</h3>
@@ -69,6 +69,23 @@ export default function Footer() {
                   <Facebook size={24} />
                 </a>
               </div>
+            </div>
+          </div>
+          
+          {/* QR Code Section */}
+          <div className="flex flex-col items-center md:items-start">
+            <h3 className="text-lg font-semibold mb-4 border-b-2 border-blue-500 pb-2">Connect With Us</h3>
+            <div className="flex flex-col items-center">
+              <div className="bg-white p-2 rounded-lg mb-3">
+                <img 
+                  src={qrCode} 
+                  alt="GharPaluwa QR Code" 
+                  className="w-32 h-32 object-contain"
+                />
+              </div>
+              <p className="text-xs text-gray-400 text-center max-w-[200px]">
+                Scan to connect on social media and get exclusive offers!
+              </p>
             </div>
           </div>
         </div>

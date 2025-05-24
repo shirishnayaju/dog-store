@@ -12,7 +12,7 @@ passport.use(new GoogleStrategy({
   clientSecret: process.env.GOOGLE_CLIENT_SECRET || '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',
   // Use an environment variable for the redirect URI with a fallback
   // This should match one of your authorized redirect URIs in Google Cloud Console
-  callbackURL: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5174/auth/google/callback'
+  callbackURL: process.env.GOOGLE_REDIRECT_URI || `${process.env.FRONTEND_URL || 'http://localhost:5174'}/auth/google/callback`
 },
 (accessToken, refreshToken, profile, done) => {
   // Here, you can handle user profile information

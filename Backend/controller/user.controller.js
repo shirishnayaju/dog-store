@@ -39,18 +39,37 @@ export const signup = async (req, res) => {
 // Login - UPDATED to include token
 export const login = async (req, res) => {
   try {
+    console.log("Login attempt with data:", req.body);
+    
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+    
+    // Validate required fields
+    if (!email) {
+      console.log("Login failed: Email is missing");
+      return res.status(400).json({ message: "Email is required" });
     }
+    if (!password) {
+      console.log("Login failed: Password is missing");
+      return res.status(400).json({ message: "Password is required" });
+    }
+    
+    // Find user by email
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) {
+      console.log("Login failed: No user found with email:", email);
+      return res.status(400).json({ message: "User not found with this email" });
+    }
 
+    // Verify password
     const isMatch = await bcryptjs.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
-
-    // Generate JWT token
+    if (!isMatch) {
+      console.log("Login failed: Incorrect password for user:", email);
+      return res.status(400).json({ message: "Incorrect password" });
+    }    // Generate JWT token
     const token = generateToken(user);
+    
+    console.log("Login successful for user:", email);
+    console.log("Generated token (truncated):", token.substring(0, 20) + "...");
 
     // Include token and user data in response
     res.status(200).json({ 

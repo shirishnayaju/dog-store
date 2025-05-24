@@ -13,6 +13,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export function ProductModal({ 
   productName, 
@@ -36,11 +37,11 @@ export function ProductModal({
   const [dogName, setDogName] = useState('');
   const [dogBreed, setDogBreed] = useState('');
   const [dogBehaviour, setDogBehaviour] = useState('');
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState(null);
+  const { addToast } = useToast();
   
   // Determine user email
   useEffect(() => {
@@ -68,11 +69,14 @@ export function ProductModal({
       }
     }
   }, [user]);
-  
-  // Modal open handler
+    // Modal open handler
   const handleModalOpen = useCallback(() => {
     if (!user) {
-      alert('Please log in to schedule a vaccination appointment.');
+      addToast({
+        title: 'Login Required',
+        description: 'Please log in to schedule a vaccination appointment.',
+        type: 'warning'
+      });
       navigate('/login');
       return;
     }
@@ -83,7 +87,7 @@ export function ProductModal({
     }
     
     setIsModalOpen(true);
-  }, [user, navigate]);
+  }, [user, navigate, addToast]);
   
   // Modal close handler
   const handleModalClose = useCallback(() => {
@@ -94,17 +98,24 @@ export function ProductModal({
   // Form submission handler
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
-    
-    // Check user authentication
+      // Check user authentication
     if (!user) {
-      alert('Please log in to schedule an appointment.');
+      addToast({
+        title: 'Login Required',
+        description: 'Please log in to schedule an appointment.',
+        type: 'warning'
+      });
       navigate('/login');
       return;
     }
     
     // Check user email
     if (!userEmail) {
-      alert('Valid user email not available. Please log out and log in again.');
+      addToast({
+        title: 'Authentication Error',
+        description: 'Valid user email not available. Please log out and log in again.',
+        type: 'error'
+      });
       return;
     }
     
@@ -124,16 +135,23 @@ export function ProductModal({
     const missingFields = requiredFields
       .filter(field => !field.value)
       .map(field => field.name);
-    
-    if (missingFields.length > 0) {
-      alert(`Please fill out the following fields: ${missingFields.join(', ')}`);
+      if (missingFields.length > 0) {
+      addToast({
+        title: 'Missing Information',
+        description: `Please fill out the following fields: ${missingFields.join(', ')}`,
+        type: 'error'
+      });
       return;
     }
     
     // Validate phone number
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(phoneNumber.replace(/\D/g, ''))) {
-      alert('Please enter a valid 10-digit phone number.');
+      addToast({
+        title: 'Invalid Phone Number',
+        description: 'Please enter a valid 10-digit phone number.',
+        type: 'error'
+      });
       return;
     }
     
@@ -173,13 +191,20 @@ export function ProductModal({
         },
         body: JSON.stringify(vaccinationData),
       });
-      
-      if (response.ok) {
+        if (response.ok) {
         const result = await response.json();
         console.log('Vaccination booking successful:', result);
         
         // Close the modal
         setIsModalOpen(false);
+        
+        // Show success toast
+        addToast({
+          title: 'Booking Successful',
+          description: `Your ${productName} vaccination appointment has been scheduled successfully.`,
+          type: 'success',
+          duration: 5000
+        });
         
         // Prepare booking details for confirmation page
         const bookingDetails = {
@@ -193,19 +218,27 @@ export function ProductModal({
         // Navigate to confirmation page
         navigate('/BookingConfirm', { 
           state: { bookingDetails } 
-        });
-      } else {
+        });} else {
         const errorData = await response.json();
         console.error('Booking failed:', errorData);
-        alert(`Failed to book appointment: ${errorData.message || 'Unknown error'}`);
+        addToast({
+          title: 'Booking Failed',
+          description: `${errorData.message || 'Unknown error'}`,
+          type: 'error',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error during vaccination booking:', error);
-      alert('Error connecting to the server. Please try again later.');
+      addToast({
+        title: 'Connection Error',
+        description: 'Error connecting to the server. Please try again later.',
+        type: 'error',
+        duration: 5000
+      });
     } finally {
       setIsSubmitting(false);
-    }
-  }, [
+    }  }, [
     appointmentDate, 
     appointmentTime, 
     productName, 
@@ -221,7 +254,8 @@ export function ProductModal({
     user, 
     navigate, 
     vaccinationCenter, 
-    userEmail
+    userEmail,
+    addToast
   ]);
   
   // Reset form fields
@@ -245,23 +279,34 @@ export function ProductModal({
   // Next step handler
   const handleNextStep = (e) => {
     e.preventDefault();
-    
-    // Validate fields for current step
+      // Validate fields for current step
     if (currentStep === 1) {
       if (!appointmentDate || !appointmentTime) {
-        alert('Please select both date and time for your appointment.');
+        addToast({
+          title: 'Missing Information',
+          description: 'Please select both date and time for your appointment.',
+          type: 'warning'
+        });
         return;
       }
     } else if (currentStep === 2) {
       if (!patientName || !phoneNumber || !city || !address) {
-        alert('Please fill all required owner information fields.');
+        addToast({
+          title: 'Missing Information',
+          description: 'Please fill all required owner information fields.',
+          type: 'warning'
+        });
         return;
       }
       
       // Validate phone number
       const phoneRegex = /^\d{10}$/;
       if (!phoneRegex.test(phoneNumber.replace(/\D/g, ''))) {
-        alert('Please enter a valid 10-digit phone number.');
+        addToast({
+          title: 'Invalid Phone Number',
+          description: 'Please enter a valid 10-digit phone number.',
+          type: 'error'
+        });
         return;
       }
     }
