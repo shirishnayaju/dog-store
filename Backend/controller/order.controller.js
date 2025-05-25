@@ -124,6 +124,38 @@ export const deleteOrder = async (req, res) => {
   }
 };
 
+// Cancel an order by ID (update status to Cancelled)
+export const cancelOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    
+    // Find the order first to check if it exists and can be cancelled
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    
+    // Check if order can be cancelled (only pending orders can be cancelled)
+    if (order.status && order.status.toLowerCase() !== 'pending') {
+      return res.status(400).json({ 
+        message: 'Only pending orders can be cancelled',
+        currentStatus: order.status
+      });
+    }
+    
+    // Update the order status to Cancelled
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { status: 'Cancelled' },
+      { new: true } // Return the updated document
+    );
+    
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: 'Error cancelling order', error: error.message });
+  }
+};
+
 // Get all orders for a specific user by email
 export const getOrdersByUser = async (req, res) => {
   try {

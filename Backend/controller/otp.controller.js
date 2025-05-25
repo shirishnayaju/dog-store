@@ -21,7 +21,7 @@ const sendOTPEmail = async (email, otp, purpose = 'reset') => {
   // Use project logo instead of random image
   const logoHtml = `
     <div style="text-align: center; margin-bottom: 20px;">
-      <img src="https://i.ibb.co/6Yfh9FJ/logo.jpg" alt="GharPaluwa Logo" style="max-width: 100px; height: auto; border-radius: 10px;" />
+   <img src="https://th.bing.com/th/id/OIP.MzeiYaPtRAUpb7-SabBPZQHaHa?cb=iwp2&rs=1&pid=ImgDetMain" alt="GharPaluwa Logo" style="max-width: 60px; height:60px;" />
     </div>
   `;
 

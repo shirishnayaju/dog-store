@@ -230,7 +230,7 @@ const DashboardCharts = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
+        {/* <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
           <h3 className="text-gray-500 text-sm font-medium">TOTAL ORDERS</h3>
           <p className="text-2xl font-bold">
             {Array.isArray(chartData.salesData) && chartData.salesData.length > 0
@@ -241,8 +241,8 @@ const DashboardCharts = () => {
             <span className="text-green-500 text-sm font-medium">↑ 12%</span>
             <span className="text-gray-500 text-sm ml-2">vs last month</span>
           </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500">
+        </div> */}
+        {/* <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500">
           <h3 className="text-gray-500 text-sm font-medium">TOTAL REVENUE</h3>
           <p className="text-2xl font-bold">${
             Array.isArray(chartData.salesData) && chartData.salesData.length > 0
@@ -253,8 +253,8 @@ const DashboardCharts = () => {
             <span className="text-green-500 text-sm font-medium">↑ 8%</span>
             <span className="text-gray-500 text-sm ml-2">vs last month</span>
           </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-yellow-500">
+        </div> */}
+        <div className="bg-white p-4 rounded-lg w-auto h-32 shadow-md border-l-4 border-yellow-500">
           <h3 className="text-gray-500 text-sm font-medium">ACTIVE USERS</h3>
           <p className="text-2xl font-bold">
             {((parseInt(chartData.userStats?.newUsers) || 0) + (parseInt(chartData.userStats?.returningUsers) || 0))}

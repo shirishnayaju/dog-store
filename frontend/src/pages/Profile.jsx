@@ -90,10 +90,10 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("orders");
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [cancellingBooking, setCancellingBooking] = useState(null);
+  const [cancellingOrder, setCancellingOrder] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -178,12 +178,12 @@ export default function ProfilePage() {
         headers: {
           Authorization: `Bearer ${user.token}`
         }
-      });
-
-      setOrders(orders.filter(order => order._id !== orderToDelete));
+      });      setOrders(orders.filter(order => order._id !== orderToDelete));
       addToast({
         type: 'success',
-        message: 'Order deleted successfully'
+        title: 'Order Deleted',
+        description: 'Order deleted successfully',
+        duration: 3000
       });
       setShowDeleteDialog(false);
       setOrderToDelete(null);
@@ -192,8 +192,48 @@ export default function ProfilePage() {
       setError(err.response?.data?.message || "Failed to delete order.");
       addToast({
         type: 'error',
-        message: err.response?.data?.message || "Failed to delete order."
+        title: 'Delete Failed',
+        description: err.response?.data?.message || "Failed to delete order.",
+        duration: 4000
+      });    }
+  };
+
+  // Handle cancellation of an order
+  const handleCancelOrder = async (orderId) => {
+    if (!orderId) return;
+    
+    setCancellingOrder(orderId);
+    
+    try {
+      const response = await axios.patch(
+        `http://localhost:4001/api/orders/${orderId}/cancel`,
+        { status: 'Cancelled' },
+        { 
+          headers: { 
+            Authorization: `Bearer ${user.token}` 
+          } 
+        }
+      );
+      
+      // Update the order in the list
+      setOrders(orders.map(order => 
+        order._id === orderId ? { ...order, status: 'Cancelled' } : order
+      ));
+      
+      addToast({
+        type: 'success',
+        title: 'Order Cancelled',
+        description: 'Your order has been successfully cancelled.'
       });
+    } catch (err) {
+      console.error("Error cancelling order:", err);
+      addToast({
+        type: 'error',
+        title: 'Cancellation Failed',
+        description: err.response?.data?.message || "Failed to cancel order"
+      });
+    } finally {
+      setCancellingOrder(null);
     }
   };
 
@@ -407,9 +447,24 @@ export default function ProfilePage() {
                             <div>
                               <h3 className="font-medium text-gray-800 mb-1">Order #{order._id.substring(order._id.length - 8)}</h3>
                               <p className="text-sm text-gray-500">Placed on {formatDate(order.createdAt || new Date())}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
+                            </div>                            <div className="flex items-center gap-2">
                               <StatusBadge status={order.status} />
+                              {order.status === 'Pending' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="bg-orange-600 text-white hover:bg-orange-700 flex items-center"
+                                  onClick={() => handleCancelOrder(order._id)}
+                                  disabled={cancellingOrder === order._id}
+                                >
+                                  {cancellingOrder === order._id ? (
+                                    <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin mr-1"></div>
+                                  ) : (
+                                    <X className="w-4 h-4 mr-1" />
+                                  )}
+                                  Cancel
+                                </Button>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="sm"

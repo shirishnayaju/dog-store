@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from "../components/ui/button";
 import { useCart } from '../hooks/useCart'; 
-import { Toast } from '../components/ui/toast';
 import { ShoppingCart, Check, PlusCircle, MinusCircle, CreditCard, Heart, Package, Star } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 import Rating from '../components/ui/Rating'; 
 import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/ProductCard'; 
@@ -14,7 +14,7 @@ export default function ProductDetails() {
   const { user } = useAuth();
   const [product, setProduct] = useState(null);
   const { addToCart } = useCart();
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const { addToast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [productRating, setProductRating] = useState(0); 
   const [userRating, setUserRating] = useState(0); 
@@ -23,7 +23,6 @@ export default function ProductDetails() {
   const [similarProducts, setSimilarProducts] = useState([]);
   const [isLoadingSimilar, setIsLoadingSimilar] = useState(false);
   const navigate = useNavigate();
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [activeTab, setActiveTab] = useState('description'); // New state for tabs
   const [isWishlist, setIsWishlist] = useState(false); // Wishlist state
@@ -137,27 +136,32 @@ export default function ProductDetails() {
       fetchSimilarProducts();
     }
   }, [product, id]);
-
   const handleAddToCart = () => {
     addToCart({ ...product, quantity });
-    setShowConfirmation(true);
     
-    // Auto-hide confirmation after 3 seconds
-    setTimeout(() => {
-      setShowConfirmation(false);
-    }, 3000);
+    // Using the toast system
+    addToast({
+      title: "Product Added",
+      description: `"${product.name}" has been added to your cart.`,
+      duration: 3000,
+      type: 'success'
+    });
   };
-
   // Updated Buy Now function to check for login
   const handleBuyNow = () => {
     if (!user) {
-      // Show login prompt if user is not logged in
-      setShowLoginPrompt(true);
+      // Show login prompt using toast
+      addToast({
+        title: "Login Required",
+        description: "Please log in to complete this action.",
+        duration: 5000,
+        type: 'warning'
+      });
       
-      // Auto-hide login prompt after 3 seconds
+      // Navigate to login page after a short delay
       setTimeout(() => {
-        setShowLoginPrompt(false);
-      }, 3000);
+        navigate('/login');
+      }, 2000);
       
       return;
     }
@@ -170,17 +174,31 @@ export default function ProductDetails() {
   const handleQuantityChange = (amount) => {
     setQuantity((prevQuantity) => Math.max(1, Math.min(5, prevQuantity + amount))); // Ensure quantity is between 1 and 5
   };
-
   const toggleWishlist = () => {
     setIsWishlist(!isWishlist);
     // Here you would typically also update the wishlist in your database
+    
+    // Show toast notification for wishlist toggle
+    addToast({
+      title: isWishlist ? "Removed from Wishlist" : "Added to Wishlist",
+      description: isWishlist 
+        ? `"${product.name}" has been removed from your wishlist.` 
+        : `"${product.name}" has been added to your wishlist.`,
+      duration: 3000,
+      type: 'success'
+    });
   };
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
-      // Show login prompt if user is not logged in
-      setShowLoginPrompt(true);
+      // Show login prompt using toast
+      addToast({
+        title: "Login Required",
+        description: "Please log in to add a review.",
+        duration: 5000,
+        type: 'warning'
+      });
       return;
     }
 
@@ -213,11 +231,26 @@ export default function ProductDetails() {
           const averageRating = totalRating / updatedComments.length;
           setProductRating(averageRating);
         }
-        
-        setCommentText('');
+          setCommentText('');
         setUserRating(0); // Reset the user rating input after submission
+        
+        // Show success toast
+        addToast({
+          title: "Review Submitted",
+          description: "Thank you for your feedback!",
+          duration: 3000,
+          type: 'success'
+        });
       } catch (error) {
         console.error('Error submitting comment:', error);
+        
+        // Show error toast
+        addToast({
+          title: "Submission Failed",
+          description: "We couldn't submit your review. Please try again.",
+          duration: 5000,
+          type: 'error'
+        });
         
         // Fallback: Add comment locally if server request fails
         const newComment = {
@@ -611,8 +644,7 @@ export default function ProductDetails() {
                   ...similarProduct,
                   _id: similarProduct._id || similarProduct.id,
                   rating: similarProduct.rating || 4,
-                  stock: similarProduct.stock || 10
-                }} 
+                  stock: similarProduct.stock || 10                }} 
                 categoryIcons={categoryIcons}
               />
             ))}
@@ -625,35 +657,6 @@ export default function ProductDetails() {
           </div>
         )}
       </div>
-      
-      {/* Toast Notifications */}
-      {showConfirmation && (
-        <Toast
-          title="Product Added"
-          description={`"${product.name}" has been added to your cart.`}
-          duration={3000}
-          onClose={() => setShowConfirmation(false)}
-        />
-      )}
-      
-      {showLoginPrompt && (
-        <Toast
-          title="Login Required"
-          description={
-            <div>
-              <p>Please log in to complete this action.</p>
-              <Button 
-                onClick={goToLogin} 
-                className="mt-2 bg-blue-500 hover:bg-blue-600 text-white"
-              >
-                Go to Login
-              </Button>
-            </div>
-          }
-          duration={3000}
-          onClose={() => setShowLoginPrompt(false)}
-        />
-      )}
     </div>
   );
 }

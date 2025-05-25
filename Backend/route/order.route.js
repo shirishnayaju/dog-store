@@ -5,6 +5,7 @@ import {
   getOrderById,
   updateOrder,
   deleteOrder,
+  cancelOrder,
   getOrdersByUser,
 } from '../controller/order.controller.js';
 
@@ -24,6 +25,9 @@ router.put('/orders/:id', updateOrder);
 
 // Delete an order by ID
 router.delete('/orders/:id', deleteOrder);
+
+// Cancel an order by ID (update status to Cancelled)
+router.patch('/orders/:id/cancel', cancelOrder);
 
 // Get all orders for a specific user by email
 router.get('/users/:userEmail/orders', getOrdersByUser);
