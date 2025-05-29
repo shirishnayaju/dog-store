@@ -54,7 +54,7 @@ const Admin = () => {
     // Ensure redirect happens after state is cleared
     setTimeout(() => {
       navigate('/home');
-    }, 100);
+    }, 30);
     
     setShowLogoutDialog(false);
   };

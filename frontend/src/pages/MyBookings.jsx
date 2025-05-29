@@ -677,11 +677,6 @@ export default function MyBookings() {
               >
                 <option value="">Select a vaccination center</option>
                 <option value="Main Center">Main Center</option>
-                <option value="Main Clinic">Main Clinic</option>
-                <option value="North Branch">North Branch</option>
-                <option value="South Branch">South Branch</option>
-                <option value="East Branch">East Branch</option>
-                <option value="West Branch">West Branch</option>
               </select>
             </div>
           </div>
